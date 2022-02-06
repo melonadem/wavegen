@@ -1,0 +1,108 @@
+table {
+    border-collapse: collapse;
+    border: 2px solid #000;
+}
+tbody th {
+    text-align:left;
+}
+tfoot th {
+}
+td {
+    text-align:left;
+}
+th, td {
+    margin: 0;
+    padding: 0.2em 0.4em 0.2em 0.5em;
+    border: 1px solid #666;
+}
+body {
+    margin-top: 6em;
+    padding: 1em 4em 2em;
+    background-color: #000;
+    color: #ccc;
+    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+}
+h1 {
+    font-size: 2em;
+    padding-bottom: .3em;
+    border-bottom: 1px solid var(--color-border-muted);
+}
+
+}
+h2 {
+    font-size: 1.75em;
+    padding-bottom: .2em;
+}
+
+}
+dl {
+    margin-left: 2ex;
+}
+dl dd{
+    margin-top: 1ex;
+}
+dl dt {
+    font-weight: normal;
+/*
+    border-width: 1px;
+    border-style: none none dotted dotted;
+*/
+    padding-left: 1ex;
+    margin-top: 2ex;
+    margin-bottom: 0.5ex;
+}
+
+ul li {
+    margin-top: 0.8ex;
+}
+.comment {
+    font-size: 70%;
+}
+.synopsis dt {
+    font-weight: normal;
+}
+pre {
+    margin: 1ex 1em;
+    padding: 1ex;;
+    border: 1px solid black;
+}
+/*
+.dos-console{
+    background-color: #000;
+    color: #c0c0c0
+}
+*/
+del {;
+    color: #666
+}
+
+ins {
+    font-weight: bold;
+}
+
+hr {
+    border: solid #ddd;
+    border-width: 0px 1px 1px 0px;
+    height: 2px;
+    width: 98%;
+    color: #333;
+}
+
+address {
+    margin-top: 2.0em;
+    border-top: 1px dashed #000;
+    padding: 0.7em 0.6em 0;
+}
+
+strong.warning {
+    color: #F00;
+}
+
+.smallvoice {
+    font-size: 70%;
+}
+
+code {
+    background-color: #eee;
+    color: #000
+}

@@ -8,3 +8,5 @@ I did not create the base for the tool - it has been hosted on an old fc2 websit
 - [ ] fix the broken distortion modes lol
 - [ ] Clean up the help-page even more to add a more comprehensive breakdown of how the program works
 - [ ] Add comments to the code as needed.
+- [ ] Refactor function/variable names to be more readable (open-sourcing reasons) here;
+- [ ] Get rid of help page, embed it as part of the main page.
