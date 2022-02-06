@@ -291,23 +291,27 @@ function calcmain() {
 	}
 	var sep;
 	switch (c) {
-		case 0:
+		case 0: //none ""
 			sep = "";
 			break;
-		case 1:
+		case 1: //space " "
 			sep = " ";
 			break;
-		case 2:
+		case 2: //comma and space ", "
 			sep = ", ";
 			break;
-		case 3:
+		case 3: //comma ","
 			sep = ",";
 			break;
-		case 4:
+		case 4: //new line
 			sep = "\n";
 			break;
 	}
-		var graph_str = "";
+
+	//;; Generate a graph view
+	//;; To do: Replace this with something more robust, maybe fixed size and something that looks more like a graph than asterisks drawn vertically. I don't know how it would be done, but the data points are already there in float form;
+	//;; it would be possible to just scale these up to whatever size the graph is and divide the graph's X position into however many steps the waveforms have, and the y position by the height/2 + height/2
+	var graph_str = "";
 	for (i = 0; i < t_length; i++) {
 		graph_str += repeat_str("*", idata[i]);
 		graph_str += "\n";
@@ -318,13 +322,13 @@ function calcmain() {
 	window.document.F1.TEXT.value = result_vals.join(sep);
 }
 
+//;; Function to set wavetable parameters based on the preset format selected.
 function nmpreset(n, m, s) {
 	window.document.F1.N.value = n;
 	window.document.F1.M.value = m;
 	window.document.F1.sign[0].checked = 1-s;
 	window.document.F1.sign[1].checked = s;
 }
-
 function uncheckradio() {
 	var i;
 	for (i = 0; i < window.document.F1.preset.length; i++) {

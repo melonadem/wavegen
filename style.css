@@ -25,13 +25,19 @@ body {
 h1 {
     font-size: 2em;
     padding-bottom: .3em;
-    border-bottom: 1px solid var(--color-border-muted);
+    border-bottom: 1px solid #666;
 }
 
 }
 h2 {
     font-size: 1.75em;
     padding-bottom: .2em;
+}
+a, a:visited, a:hover, a:active {
+    font-size: 1.25em;
+    color: #7cf;
+    font-weight: 700;
+    text-decoration: underline;
 }
 
 }
@@ -105,4 +111,13 @@ strong.warning {
 code {
     background-color: #eee;
     color: #000
+}
+
+textarea {
+    background-color: #111;
+    font-weight: 700;
+    color: #0f0;
+    border: 0;
+    border-radius: 10px;
+    resize: none;
 }
