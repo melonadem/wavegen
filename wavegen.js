@@ -148,7 +148,7 @@ function calcmain() {
     function normalize(x) {
     	return Math.floor(x*(y_height/2) + y_height/2);
     }
-
+	// ;; This function makes the wrap distortion work properly by adjusting the offset of the waveform when it crosses over the boundries.
 	function stairDouble(x) {
 		return Math.ceil((Math.abs(x)-1)/2)*2;
 	}
@@ -168,7 +168,7 @@ function calcmain() {
             break;
         }
     }
-    //;; This block of switch statements will put the integers in result_vals, depending on which distortion mode is selected.
+    //;; This block of switch statements will put the integers in idata[i] and fdata[i], depending on which distortion mode is selected.
     /* None - output as is.
      * Clip - replace values beyond the maximum/minimum allowed range with their maximum/minimum counterparts.
      * Fold - invert values beyond the maximum/minimum range so that they still stay in range.
@@ -177,13 +177,18 @@ function calcmain() {
      * Issues: Fold and wrap reset once they cross the halfway point - likely because of the waveform spanning from -1 to 1.
      */
     switch (c) {
-        case 0: //none
+		case 0: //none
+		default:
             for (t = 0 ; t < t_length; t++) {
         		var p = (t + 0.5) / t_length;
         		var y;
         		y = datafunction(p);
                 fdata[t] = y;
                 idata[t] = normalize(y);
+				if (window.document.F1.abscheck.checked) {
+					fdata[t] = (Math.abs(y))*2-1;
+					idata[t] = normalize((Math.abs(y))*2-1);
+				}
         	}
         break;
         case 1: //clip
@@ -201,6 +206,10 @@ function calcmain() {
                 }
                 fdata[t] = y;
                 idata[t] = normalize(y);
+				if (window.document.F1.abscheck.checked) {
+					fdata[t] = (Math.abs(y))*2-1;
+					idata[t] = normalize((Math.abs(y))*2-1);
+				}
         	}
         break;
         case 2: //fold
@@ -210,12 +219,12 @@ function calcmain() {
                 var y;
                 if (datafunction(p) > 1) {
                     y = datafunction(p) - (
-                        2*datafunction(p) - ((Math.ceil(datafunction(p)))&2)
+                        2*datafunction(p) - stairDouble(datafunction(p))
                     );
                 }
                 else if (datafunction(p) < -1) {
                     y = datafunction(p) - (
-                        2*datafunction(p) - ((Math.floor(datafunction(p)))&-2)
+                        2*datafunction(p) + stairDouble(datafunction(p))
                     );
                 }
                 else {
@@ -223,6 +232,10 @@ function calcmain() {
                 }
                 fdata[t] = y;
                 idata[t] = normalize(y);
+				if (window.document.F1.abscheck.checked) {
+					fdata[t] = (Math.abs(y))*2-1;
+					idata[t] = normalize((Math.abs(y))*2-1);
+				}
             }
         break;
         case 3: //wrap
@@ -240,6 +253,10 @@ function calcmain() {
                 }
                 fdata[t] = y;
                 idata[t] = normalize(y);
+				if (window.document.F1.abscheck.checked) {
+					fdata[t] = (Math.abs(y))*2-1;
+					idata[t] = normalize((Math.abs(y))*2-1);
+				}
         	}
         break;
     }
