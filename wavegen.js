@@ -73,7 +73,7 @@ function tri(phase) {
 
 // sprintf("\$%02x", $num)
 function toHexStr(num, prefix_str, signed_check, usePrefix=true) {
-	var prefix = true;
+	var prefix;
 
 	if (signed_check) {
 		prefix = prefix_str;
