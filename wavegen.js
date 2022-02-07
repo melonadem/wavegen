@@ -148,7 +148,7 @@ function calcmain() {
     function normalize(x) {
     	return Math.floor(x*(y_height/2) + y_height/2);
     }
-	// ;; This function makes the wrap distortion work properly by adjusting the offset of the waveform when it crosses over the boundries.
+	// ;; This function makes the wrap and fold distortions work properly by adjusting the offset of the waveform when it crosses over the boundries.
 	function stairDouble(x) {
 		return Math.ceil((Math.abs(x)-1)/2)*2;
 	}
@@ -173,72 +173,82 @@ function calcmain() {
      * Clip - replace values beyond the maximum/minimum allowed range with their maximum/minimum counterparts.
      * Fold - invert values beyond the maximum/minimum range so that they still stay in range.
      * Wrap - values beyond the maximum/minimum range will be wrapped to the opposite side creating gnarly effects.
-
-     * Issues: Fold and wrap reset once they cross the halfway point - likely because of the waveform spanning from -1 to 1.
+	 * All results go through an absolute verificiation - if the "absolute" checkbox is ticked, ensure all values are positive (and the waveform is properly amplified to make up for this)
      */
     switch (c) {
-		case 0: //none
+		case 0: // ;;none
 		default:
             for (t = 0 ; t < t_length; t++) {
         		var p = (t + 0.5) / t_length;
         		var y;
         		y = datafunction(p);
-                fdata[t] = y;
-                idata[t] = normalize(y);
 				if (window.document.F1.abscheck.checked) {
 					fdata[t] = (Math.abs(y))*2-1;
 					idata[t] = normalize((Math.abs(y))*2-1);
 				}
+				else {
+					fdata[t] = y;
+	                idata[t] = normalize(y);
+				}
         	}
         break;
-        case 1: //clip
+        case 1: // ;;clip
             for (t = 0 ; t < t_length; t++) {
         		var p = (t + 0.5) / t_length;
         		var y;
-                if (datafunction(p) > 1) {
-                    y = 1;
+                if (datafunction(p) > squ_amp) {
+                    y = squ_amp;
                 }
-                else if (datafunction(p) < -1) {
-                    y = -1;
+                else if (datafunction(p) < -squ_amp) {
+                    y = -squ_amp;
                 }
                 else {
         		y = datafunction(p);
                 }
-                fdata[t] = y;
-                idata[t] = normalize(y);
 				if (window.document.F1.abscheck.checked) {
 					fdata[t] = (Math.abs(y))*2-1;
 					idata[t] = normalize((Math.abs(y))*2-1);
+				}
+				else {
+					fdata[t] = y;
+	                idata[t] = normalize(y);
 				}
         	}
         break;
-        case 2: //fold
-        //This needs corrected. It will fold back after the halfway point currently.
+        case 2: // ;;fold
             for (t = 0 ; t < t_length; t++) {
                 var p = (t + 0.5) / t_length;
                 var y;
-                if (datafunction(p) > 1) {
-                    y = datafunction(p) - (
-                        2*datafunction(p) - stairDouble(datafunction(p))
-                    );
+				if (datafunction(p) > 1) {
+					if (stairDouble(datafunction(p)) & 2 == 0) {
+						y = datafunction(p) - stairDouble(datafunction(p));
+					}
+					else {
+						y = -datafunction(p) + stairDouble(datafunction(p));
+					}
                 }
                 else if (datafunction(p) < -1) {
-                    y = datafunction(p) - (
-                        2*datafunction(p) + stairDouble(datafunction(p))
-                    );
+					if (stairDouble(datafunction(p)) & 2 == 0) {
+						y = datafunction(p) + stairDouble(datafunction(p));
+					}
+					else {
+						y = -datafunction(p) - stairDouble(datafunction(p));
+					}
                 }
                 else {
-                y = datafunction(p);
+        		y = datafunction(p);
                 }
-                fdata[t] = y;
-                idata[t] = normalize(y);
 				if (window.document.F1.abscheck.checked) {
 					fdata[t] = (Math.abs(y))*2-1;
 					idata[t] = normalize((Math.abs(y))*2-1);
 				}
+				else {
+					fdata[t] = y;
+	                idata[t] = normalize(y);
+				}
             }
         break;
-        case 3: //wrap
+        case 3: // ;;wrap
             for (t = 0 ; t < t_length; t++) {
         		var p = (t + 0.5) / t_length;
         		var y;
@@ -251,15 +261,20 @@ function calcmain() {
                 else {
         		y = datafunction(p);
                 }
-                fdata[t] = y;
-                idata[t] = normalize(y);
 				if (window.document.F1.abscheck.checked) {
 					fdata[t] = (Math.abs(y))*2-1;
 					idata[t] = normalize((Math.abs(y))*2-1);
 				}
+				else {
+					fdata[t] = y;
+	                idata[t] = normalize(y);
+				}
         	}
         break;
     }
+	for (t = 0 ; t < t_length; t++) {
+
+	}
 
     // ;; Time to see which output format was selected (and then output in said format)
     var i;

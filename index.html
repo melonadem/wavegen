@@ -1,7 +1,7 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE html>
 <html>
     <head>
-        <meta charset="ISO-8859-1">
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
         <title>Wavegen</title>
         <link rel="stylesheet" href="style.css">
         <script type="text/javascript" src="wavegen.js"></script>
@@ -14,7 +14,6 @@
     <p>
       <a onclick="showHelp()">Help</a><br />
     </p>
-    <p>Currently the fold/wrap modes do not work correctly. They still work, though, so feel free to use them.</p>
     <form name="F1" action="#">
       <b>Preset:</b>
       <input class="radio" type="radio" name="preset" value="fds" onclick="nmpreset(64,63,0)" />FDS |
@@ -41,7 +40,7 @@
 	  <b>Distortion:</b>
       <input class="radio" type="radio" name="clamp" value="0" />none |
       <input class="radio" type="radio" name="clamp" value="1" checked="checked" />clip |
-	  <input class="radio" type="radio" name="clamp" value="2" />fold (beta) |
+	  <input class="radio" type="radio" name="clamp" value="2" />fold |
 	  <input class="radio" type="radio" name="clamp" value="3" />wrap |
       <input class="checkbox" type="checkbox" name="abscheck"/>absolute
       <br />
@@ -72,24 +71,37 @@
       <br />
     </form>
 	<p>This page has been adapted from an old FC2 PPMCK page. I preserved it and roughly translated it to preserve it and open the tool up for international audiences. I also updated it along the way with some extra features (value clamping for most options is a new feature here). Special thanks to DEFENSE MECHANISM for helping prepare this page in particular. Original page by h7 (h7mailmail-at-yahoo co jp) (I am unsure if that address is still active, try your luck!)</p>
-
-
 <!-- HELP DIV -->
     <div class="help" id="help">
-        <h2>What's this?</h2>
-    	<p>This is a tool to generate waveforms for soundchips like the N163, Gameboy Wave, PC-Engine/HuC6280, SCC (K051649), and others by customizing the parameters.</p>
-    	<h2>Input fields</h2>
-    	<p>The "Wavedata length" field determines how many samples the waveform should contain (By default, this is 64 for the FDS, and 32 for the other systems)</p>
-    	<p>The "Wavedata depth" field determines the number of amplitudes each soundsample can have (0-indexed).<br>Defaults: 15 for N163/GB, 31 for PC-Engine/HES, 63 for FDS and 255 for SCC.</p>
-    	<p>If using non-float output values, the waveform will be clamped/clipped between 0 and the maximum value. To-do: add other out-of-bounds methods ala LSDj</p>
-    	<p>The "Function" field allows you to write the function using the argument "p". The output field is roughly calculated as follows.</p>
-    	<pre><code>for (t = 0 ; t < wavetable_length; t++) {
-    	    p = (t + 0.5)/wavetable_length; //Since it is the average value of t and t + 1, 0.5 is added.
-    	    data[t] = function(p);
-    	}</code></pre>
-    	<h2>Examples</h2>
-    	<p>Be mindful of the angle units. Although sin, squ, tri and saw are defined here, the argument is obtained by dividing the angle (in rad) by 2*pi. 90� becomes 0.25, 180� becomes 0.5, 270� becomes 0.75 and 360� becomes 1.</p>
-    	<p>You can take the examples below and experiment by changing the value.</p>
+        <h2>Help</h2>
+    	<p>This is a tool to generate waveforms for soundchips like the N163, Gameboy, PC-Engine/HuC6280, SCC (K051649/K052539), FDS and others by adusting the parameters.</p>
+    	<h2>Parameters:</h2>
+    	<p>"Length" sets the maximum numbers of samples to take from the resulting function (default is 32, other presets have their own default they can set).
+        <br/>
+        "Depth" sets the bit depth of the resulting waveform (default is 15).
+        <br/>
+        For all non-floating number output options, all samples will be rounded down to the nearest step in the bitdepth (Essentially, Math.floor(x) is done for every sample so it lands on a step).
+        <br/>
+        The distortion selector allows for 4 distortion options, and a toggleable "absolute" box leading to 8 unique options to choose from.
+        <ul>
+            <li>None - do not distort the output.</li>
+            <li>Clip - ensure the waveform stays within -1 to 1 range (0 to max depth) by limiting the output.</li>
+            <li>Fold - if the waveform crosses the range, reflect it the opposite way. Do this as many times as needed (can create multi-reflection waveforms)</li>
+            <li>Wrap - if the waveform crosses the range, wrap the waveform to come out from the opposite side. Similar to fold mode, slightly different in processing</li>
+            <li>Absolute - toggleable; if this is selected, negative values will become positive, reflecting part of the waveform. Toggleable as it is calculated after distortion processing.</li>
+        </ul>
+        </p>
+    	<h2>Usage:</h2>
+    	<p>The phase of a waveform can be shifted by adding or subtracting a number to or from p. (0 to 1 represents 0° to 360° - 0.25 is 90°, 0.50 is 180°, 0.75 is 270°)<br/>
+            The available waveforms are as follows:<br/>
+            <code>sin(y*p+x)</code> - generates a sine wave of y*p periods, whose phase is shifted by +x.<br/>
+            <code>saw(y*p+x)</code> - generates a sawtooth wave. Same parameters as sin().<br/>
+            <code>tri(y*p+x,z)</code> - generates a triangle wave. Same parameters as sin(), but with the addition of asymmetry ratio "z", 0.5 represents a symmetric waveform.<br/>
+            <code>squ(y*p+x,z)</code> - generates a square wave. Same parameters as tri().<br/>
+            In all cases, value "p" needs to be present as is (don't replace it with a number, type in p). For example: sin(p) will generate a simple sine wave. sin(2*p) will generate a higher pitch sine wave (by an octave). This works out like FM multiplication values.
+        </p>
+        <h2>Examples:</h2>
+    	<p>Please take a look at the examples below and feel free to experiment.</p>
     	<table>
     	<tbody>
     	<tr><th>sin(p)</th><td><img src=" data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAASAQMAAAAJ7e5rAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAABlBMVEUAAAAA1ABAM7nUAAAANklEQVQI12NgQAKMP0Ak8x8Qyf4PQfL/B5Hy/xvgpP3/A2DyAYMDnPzAcABI/mBEkP/BquAAALzxG9+WzQGQAAAAAElFTkSuQmCC"></td><td>Sine wave</td></tr>
