@@ -72,7 +72,7 @@ function tri(phase) {
 }
 
 // sprintf("\$%02x", $num)
-function toHexStr(num, prefix_str, signed_check) {
+function toHexStr(num, prefix_str, signed_check, usePrefix=true) {
 	var prefix;
 
 	if (signed_check) {
@@ -90,10 +90,10 @@ function toHexStr(num, prefix_str, signed_check) {
 			num = -num;
 		}
 	}
-	if (num < 16) {
+	if (num < 16 && usePrefix == true) {
 		prefix += "0";
 	}
-	return prefix + num.toString(16);
+	return prefix + num.toString(16).toUpperCase();
 }
 
 // $str x $num
@@ -308,7 +308,12 @@ function calcmain() {
 			result_vals[i] = toHexStr(idata[i], "", signed_check);
 		}
 		break;
-		case 4: // normalized float
+		case 4: //"Xh"
+		for (i = 0; i < t_length; i++) {
+			result_vals[i] = toHexStr(idata[i], "", signed_check, false);
+		}
+		break;
+		case 5: // normalized float
 			for (i = 0; i < t_length; i++) {
 				result_vals[i] = fdata[i];
 			}
