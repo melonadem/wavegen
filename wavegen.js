@@ -149,6 +149,10 @@ function calcmain() {
     	return Math.floor(x*(y_height/2) + y_height/2);
     }
 
+	function stairDouble(x) {
+		return Math.ceil((Math.abs(x)-1)/2)*2;
+	}
+
     // ;; This is where the results are appended to strings and the graph is generated.
 	var result_vals = new Array(t_length);
     var i;
@@ -206,12 +210,12 @@ function calcmain() {
                 var y;
                 if (datafunction(p) > 1) {
                     y = datafunction(p) - (
-                        2*datafunction(p) - (Math.ceil(datafunction(p)))
+                        2*datafunction(p) - ((Math.ceil(datafunction(p)))&2)
                     );
                 }
                 else if (datafunction(p) < -1) {
                     y = datafunction(p) - (
-                        2*datafunction(p) - (Math.floor(datafunction(p)))
+                        2*datafunction(p) - ((Math.floor(datafunction(p)))&-2)
                     );
                 }
                 else {
@@ -222,15 +226,14 @@ function calcmain() {
             }
         break;
         case 3: //wrap
-        //This needs corrected. It will wrap back after the halfway point currently.
             for (t = 0 ; t < t_length; t++) {
         		var p = (t + 0.5) / t_length;
         		var y;
                 if (datafunction(p) > 1) {
-                    y = datafunction(p) - Math.ceil(datafunction(p))+1;
+                    y = datafunction(p) - stairDouble(datafunction(p));
                 }
                 else if (datafunction(p) < -1) {
-                    y = datafunction(p) - Math.floor(datafunction(p))+1;
+                    y = datafunction(p) + stairDouble(datafunction(p));
                 }
                 else {
         		y = datafunction(p);
@@ -334,4 +337,30 @@ function uncheckradio() {
 	for (i = 0; i < window.document.F1.preset.length; i++) {
 		window.document.F1.preset[i].checked = false;
 	}
+}
+//;; This will select the output when any part of it is selected.
+function selectText() {
+  const input = document.getElementById('waveout');
+  input.focus();
+  input.select();
+  input.setSelectionRange(0, 99999); /* For mobile devices */
+  navigator.clipboard.writeText(input.value);
+  var tooltipCopied = document.getElementById("clipboard-tooltip");
+  tooltipCopied.innerHTML = "Copied waveform!";
+}
+
+//;; This will show a tooltip saying "Click to copy"
+function tooltip() {
+  var tooltip = document.getElementById("clipboard-tooltip");
+  var tooltipbody = document.getElementById("tooltipBody");
+  var waveformOutput = document.getElementById("waveout");
+  tooltip.innerHTML = "Copy to clipboard";
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//// HELP MENU TIME ////////////////////////////////////////////////////////////
+
+function showHelp() {
+	var helpVisibility = document.getElementById("help");
+	helpVisibility.style.display = "block";
 }
