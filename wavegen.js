@@ -342,19 +342,37 @@ function calcmain() {
 			sep = "\n";
 			break;
 	}
-
+	window.document.F1.TEXT.value = result_vals.join(sep);
 	//;; Generate a graph view
 	//;; To do: Replace this with something more robust, maybe fixed size and something that looks more like a graph than asterisks drawn vertically. I don't know how it would be done, but the data points are already there in float form;
 	//;; it would be possible to just scale these up to whatever size the graph is and divide the graph's X position into however many steps the waveforms have, and the y position by the height/2 + height/2
-	var graph_str = "";
+	/*var graph_str = "";
 	for (i = 0; i < t_length; i++) {
 		graph_str += repeat_str("*", idata[i]);
 		graph_str += "\n";
 		}
 	graph_str += repeat_str("-", y_height - 1);
 	graph_str += "\n";
-	window.document.F1.GRAPH.value = graph_str;
-	window.document.F1.TEXT.value = result_vals.join(sep);
+	window.document.F1.GRAPH.value = graph_str;*/
+	/*******************
+	*
+	*  WAVEFORM GRAPH
+	*
+	*******************/
+
+	var canvas = document.getElementById("graphcanvas");
+	var draw = canvas.getContext("2d");
+	var smpWidth = (canvas.width / t_length);
+	var smpHeight = (canvas.height / y_height);
+	draw.clearRect(0, 0, canvas.width, canvas.height);
+	draw.beginPath();
+	draw.moveTo(0,canvas.height/2);
+	for (i = 0; i < t_length; i++) {
+		draw.lineTo((smpWidth*i),(smpHeight*idata[i])+1);
+		draw.strokeStyle = '#0f0';
+		draw.stroke();
+	}
+	draw.stroke();
 }
 
 //;; Function to set wavetable parameters based on the preset format selected.
