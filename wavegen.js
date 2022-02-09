@@ -1,15 +1,4 @@
-/* A lot of this document had comments in Japanese, they had to be translated by machine (and thus may not make a lot of sense)
- * A portion of it reads fine. I will add additiona comments, denoted with "// ;;" for things that I can make sense of.
- */
-
-
-// ;; This is the debug field in the original. It's no longer needed, but is preserved just in case.
-/*
-	function debugout(str) {
-	window.document.F1.DEBUG.value = str;
-	}
-*/
-
+// ;; A lot of these comments are my own comments (denoted by // ;;). Ones that are missing are the original comments that were here once upon a time (or simply ones that I've missed).
 
 var pi = Math.pi;
 var t_length;	// Length axis
@@ -96,16 +85,6 @@ function toHexStr(num, prefix_str, signed_check, usePrefix=true) {
 	return prefix + num.toString(16).toUpperCase();
 }
 
-// $str x $num
-function repeat_str(str, num) {
-	var j;
-	var ret = "";
-	for (j = 0; j < num; j++) {
-		ret += str;
-	}
-	return ret;
-}
-
 // ;; The main calculate function, calculate how the waveform should be drawn with floating point numbers
 // ;; Also read the radio button settings and stay within their bounds
 function calcmain() {
@@ -133,24 +112,23 @@ function calcmain() {
 	} else {
 		signed_check = true;
 	}
-	/*var min = idata[0];
-	var i;
-	for (i = 0; i < t_length; i++) {
-		min = min > idata[i] ? idata[i] : min;
-	}
-	// Align minimum value to 0
-	var i;
-	for (i = 0; i < t_length; i++) {
-		idata[i] = idata[i] - min;
-	}
-    */
-    // ;;This function converts from floating point to integers; y_height/2 is added to center the waveform to whatever the midmost point of y_height is (if it's 0-15, that'd be 8)
+    // ;; This function converts from floating point to integers; y_height/2 is added to center the waveform to whatever the midmost point of y_height is (if it's 0-15, that'd be 8)
     function normalize(x) {
     	return Math.floor(x*(y_height/2) + y_height/2);
     }
-	// ;; This function makes the wrap and fold distortions work properly by adjusting the offset of the waveform when it crosses over the boundries.
+	// ;; This function makes the wrap distortion work properly by adjusting the offset of the waveform when it crosses over the boundries.
 	function stairDouble(x) {
 		return Math.ceil((Math.abs(x)-1)/2)*2;
+	}
+
+	// ;; This function ENSURES fold works properly. Jesus christ this was actual hell to fix and it turns out it just needs to be behind by 1 to work properly. Christ.
+	function invertWave(x) {
+		if (((stairDouble(x)-1) & 2) == 2) {
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 
     // ;; This is where the results are appended to strings and the graph is generated.
@@ -174,6 +152,8 @@ function calcmain() {
      * Fold - invert values beyond the maximum/minimum range so that they still stay in range.
      * Wrap - values beyond the maximum/minimum range will be wrapped to the opposite side creating gnarly effects.
 	 * All results go through an absolute verificiation - if the "absolute" checkbox is ticked, ensure all values are positive (and the waveform is properly amplified to make up for this)
+
+	 Honestly, this code is kind of a mess. There's probably good ways to clean this up, but I don't really know of them (yet).
      */
     switch (c) {
 		case 0: // ;;none
@@ -220,18 +200,16 @@ function calcmain() {
                 var p = (t + 0.5) / t_length;
                 var y;
 				if (datafunction(p) > 1) {
-					if (stairDouble(datafunction(p)) & 2 == 0) {
+					if (invertWave(datafunction(p))) {
 						y = datafunction(p) - stairDouble(datafunction(p));
-					}
-					else {
+					} else {
 						y = -datafunction(p) + stairDouble(datafunction(p));
 					}
                 }
                 else if (datafunction(p) < -1) {
-					if (stairDouble(datafunction(p)) & 2 == 0) {
+					if (invertWave(datafunction(p))) {
 						y = datafunction(p) + stairDouble(datafunction(p));
-					}
-					else {
+					} else {
 						y = -datafunction(p) - stairDouble(datafunction(p));
 					}
                 }
@@ -348,34 +326,29 @@ function calcmain() {
 			break;
 	}
 	window.document.F1.TEXT.value = result_vals.join(sep);
-	//;; Generate a graph view
-	//;; To do: Replace this with something more robust, maybe fixed size and something that looks more like a graph than asterisks drawn vertically. I don't know how it would be done, but the data points are already there in float form;
-	//;; it would be possible to just scale these up to whatever size the graph is and divide the graph's X position into however many steps the waveforms have, and the y position by the height/2 + height/2
-	/*var graph_str = "";
-	for (i = 0; i < t_length; i++) {
-		graph_str += repeat_str("*", idata[i]);
-		graph_str += "\n";
-		}
-	graph_str += repeat_str("-", y_height - 1);
-	graph_str += "\n";
-	window.document.F1.GRAPH.value = graph_str;*/
+
 	/*******************
 	*
 	*  WAVEFORM GRAPH
 	*
 	*******************/
 
+	var horizontalError = ((t_length - 1) / t_length); //;; Determine the error amount when using low sample sizes, this is similar to squ_amp issues I have been having above.
 	var canvas = document.getElementById("graphcanvas");
 	var draw = canvas.getContext("2d");
-	var smpWidth = (canvas.width / t_length);
-	var smpHeight = (canvas.height / y_height);
-	draw.clearRect(0, 0, canvas.width, canvas.height);
-	draw.beginPath();
-	draw.moveTo(0,canvas.height/2);
+	var smpWidth = 0.999*((canvas.width / t_length) / horizontalError);
+	var smpHeight = 0.99*((canvas.height / y_height) / squ_amp);
+
+	//;; Prepare the canvas when GENERATE is pressed.
+	draw.clearRect(0, 0, canvas.width, canvas.height); //;; Clear the canvas
+	draw.moveTo(0,(canvas.height)/2); //;; Move to the middle-leftmost point on the canvas.
+	draw.beginPath(); //;; Graph initialization begins here
+	draw.strokeStyle = '#0f0';
+	draw.lineWidth = 2;
 	for (i = 0; i < t_length; i++) {
-		draw.lineTo((smpWidth*i),(smpHeight*idata[i])+1);
-		draw.strokeStyle = '#0f0';
-		draw.stroke();
+		//;; Two functions are used here so that the resulting waveform is stepped (not interpolated).
+		draw.lineTo((smpWidth*i),(smpHeight*idata[i]));
+		draw.lineTo((smpWidth*i),(smpHeight*idata[i+1]));
 	}
 	draw.stroke();
 }
@@ -418,4 +391,5 @@ function tooltip() {
 function showHelp() {
 	var helpVisibility = document.getElementById("help");
 	helpVisibility.style.display = "block";
+	document.getElementById("help").scrollIntoView({behavior: 'smooth'});
 }

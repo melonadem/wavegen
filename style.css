@@ -117,6 +117,6 @@ textarea, textarea:active {
 /* GRAPH */
 canvas {
     border-radius: 10px;
-    padding: 6px;
     background-color: #111;
+    border: 6px solid #333;
 }

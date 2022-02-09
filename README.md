@@ -13,7 +13,7 @@ I did not create the base for the tool - it has been hosted on an old fc2 websit
 - [x] Add comments to the code as needed.
 - [x] Get rid of help page, embed it as part of the main page.
 - [x] Replace graph view with an actual graph view that's easier to look at.
-- [ ] Tweak the graph view to not be interpolated linearly (perhaps implement it as waveform bars or something with rectangles in the canvas?)
+- [x] Tweak the graph view to not be interpolated linearly (perhaps implement it as waveform bars or something with rectangles in the canvas?)
 - [ ] Clean up the help-page even more to add a more comprehensive breakdown of how the program works.
 - [ ] Make the help page look nicer.
 - [ ] Separate the help from the examples - add a link to the top for examples, a quick shortcut to get there fast.
