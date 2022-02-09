@@ -49,23 +49,31 @@ b {
 }
 
 code, textarea, .textfield-input {
+    border-radius: 10px;
     font-size: 0.9em;
     font-family: 'Roboto Mono', monospace;
-    background-color: #111;
+    background-color: #333;
     font-weight: 700;
     color: #eee;
     border: 0;
     resize: none;
+    border: 1px solid #000;
+}
+.textfield-input {
+    text-align: center;
 }
 .textfield-input:focus {
     outline: 0;
-    background-color: #333;
+    background-color: #444;
 }
 textarea, textarea:active {
+    background-color: #111;
     color: #0f0;
     resize: none;
     outline: 0;
-    border-radius: 10px;
+    border: 6px solid #111;
+    width: 870px;
+    overflow: hidden;
 }
 
 
@@ -118,5 +126,5 @@ textarea, textarea:active {
 canvas {
     border-radius: 10px;
     background-color: #111;
-    border: 6px solid #333;
+    border: 6px solid #111;
 }
