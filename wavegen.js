@@ -347,8 +347,8 @@ function calcmain() {
 	draw.lineWidth = 2;
 	for (i = 0; i < t_length; i++) {
 		//;; Two functions are used here so that the resulting waveform is stepped (not interpolated).
-		draw.lineTo((smpWidth*i),(smpHeight*idata[i]));
-		draw.lineTo((smpWidth*i),(smpHeight*idata[i+1]));
+		draw.lineTo((smpWidth*i),(smpHeight*(-idata[i])+canvas.height));
+		draw.lineTo((smpWidth*i),(smpHeight*(-idata[i+1])+canvas.height));
 	}
 	draw.stroke();
 }

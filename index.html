@@ -45,8 +45,8 @@
       <input class="checkbox" type="checkbox" name="abscheck"/>absolute
       <br />
       <b>Output format:</b>
-      <input class="radio" type="radio" name="format" value="0" />decimal |
-      <input class="radio" type="radio" name="format" value="1" checked="checked" />$XXh |
+      <input class="radio" type="radio" name="format" value="0" checked="checked" />decimal |
+      <input class="radio" type="radio" name="format" value="1" />$XXh |
       <input class="radio" type="radio" name="format" value="2" />0xXXh |
       <input class="radio" type="radio" name="format" value="3" />XXh |
       <input class="radio" type="radio" name="format" value="4" />Xh |
@@ -54,9 +54,9 @@
       <br />
       <b>Separator:</b>
       <input class="radio" type="radio" name="separator" value="" />"" |
-      <input class="radio" type="radio" name="separator" value=" " />" " |
+      <input class="radio" type="radio" name="separator" value=" " checked="checked" />" " |
       <input class="radio" type="radio" name="separator" value=", " />", " |
-      <input class="radio" type="radio" name="separator" value="," checked="checked" />"," |
+      <input class="radio" type="radio" name="separator" value="," />"," |
       <input class="radio" type="radio" name="separator" value="nl" />"\n"
       <br />
       <br />
@@ -76,7 +76,7 @@
     <div class="help" id="help">
         <h2>Help</h2>
     	<p>This is a tool to generate waveforms for soundchips like the N163, Gameboy, PC-Engine/HuC6280, SCC (K051649/K052539), FDS and others by adusting the parameters.</p>
-    	<h2>Parameters:</h2>
+    	<h2>Parameters</h2>
     	<p>"Length" sets the maximum numbers of samples to take from the resulting function (default is 32, other presets have their own default they can set).
         <br/>
         "Depth" sets the bit depth of the resulting waveform (default is 15).
@@ -92,7 +92,7 @@
             <li>Absolute - toggleable; if this is selected, negative values will become positive, reflecting part of the waveform. Toggleable as it is calculated after distortion processing.</li>
         </ul>
         </p>
-    	<h2>Usage:</h2>
+    	<h2>Usage</h2>
     	<p>The phase of a waveform can be shifted by adding or subtracting a number to or from p. (0 to 1 represents 0° to 360° - 0.25 is 90°, 0.50 is 180°, 0.75 is 270°)<br/>
             The available waveforms are as follows:<br/>
             <code>sin(y*p+x)</code> - generates a sine wave of y*p periods, whose phase is shifted by +x.<br/>
@@ -101,9 +101,24 @@
             <code>squ(y*p+x,z)</code> - generates a square wave. Same parameters as tri().<br/>
             In all cases, value "p" needs to be present as is (don't replace it with a number, type in p). For example: sin(p) will generate a simple sine wave. sin(2*p) will generate a higher pitch sine wave (by an octave). This works out like FM multiplication values.
         </p>
-        <h2>Examples:</h2>
+        <h2>Examples</h2>
     	<p>Please take a look at the examples below and feel free to experiment.</p>
-    	<table>
+        <div id="examples" class="examples" height="400px">
+            <div id="ex-type" class="ex-type">
+                <input class="example-radio" type="radio" name="exampleType" value="0" checked="checked" />Simple<br/>
+                <input class="example-radio" type="radio" name="exampleType" value="1" />Complex<br/>
+                <input class="example-radio" type="radio" name="exampleType" value="2" />Classic Examples<br/>
+            </div>
+            <div id="ex-select" class="ex-select">
+                blah blah blah
+            </div>
+            <div id="ex-graph" class="ex-graph">
+                <canvas id="ex-graphcanvas" width="600px" height="400px"></canvas>
+            </div>
+
+        </div>
+        <!--
+        <table>
     	<tbody>
     	<tr><th>sin(p)</th><td><img src=" data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAASAQMAAAAJ7e5rAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAABlBMVEUAAAAA1ABAM7nUAAAANklEQVQI12NgQAKMP0Ak8x8Qyf4PQfL/B5Hy/xvgpP3/A2DyAYMDnPzAcABI/mBEkP/BquAAALzxG9+WzQGQAAAAAElFTkSuQmCC"></td><td>Sine wave</td></tr>
     	<tr><th>squ(p)</th><td><img src=" data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAASAQMAAAAJ7e5rAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAABlBMVEUAAAAA1ABAM7nUAAAAFUlEQVQI12NgQAL2/w9QlfwPpuEAABMXHePd4z1AAAAAAElFTkSuQmCC"></td><td>Square wave</td></tr>
@@ -131,6 +146,7 @@
     	<tr><th>2.0*Math.abs(sin(0.5*p)) - 1.0</th><td><img src=" data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAASAQMAAAAJ7e5rAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAABlBMVEUAAAAA1ABAM7nUAAAAKElEQVQI12NgwAISMMgP6CTjDwTJ/AdBsv8Dkfz/gYT9////DyAbCwAefw3wsLFe4QAAAABJRU5ErkJggg=="></td><td>Full-wave rectification.</td></tr>
     	</tbody>
     	</table>
+        -->
     </div>
   </body>
 </html>

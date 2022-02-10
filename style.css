@@ -121,6 +121,24 @@ textarea, textarea:active {
     display: none;
     position: absolute;
 }
+.examples {
+    display: flex;
+}
+
+.ex-type {
+    background-color: #200;
+    width: 14em;
+    border-radius: 10px;
+    border: 6px solid #00000000;
+}
+.ex-select {
+    background-color: #020;
+    width: 14em;
+    border-radius: 10px;
+    border: 6px solid #00000000;
+}
+.ex-graph {
+}
 
 /* GRAPH */
 canvas {
