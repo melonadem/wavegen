@@ -336,7 +336,7 @@ function calcmain() {
 	var horizontalError = ((t_length - 1) / t_length); //;; Determine the error amount when using low sample sizes, this is similar to squ_amp issues I have been having above.
 	var canvas = document.getElementById("graphcanvas");
 	var draw = canvas.getContext("2d");
-	var smpWidth = 0.999*((canvas.width / t_length) / horizontalError);
+	var smpWidth = 0.999*((canvas.width / t_length));
 	var smpHeight = 0.99*((canvas.height / y_height) / squ_amp);
 
 	//;; Prepare the canvas when GENERATE is pressed.
@@ -345,10 +345,10 @@ function calcmain() {
 	draw.beginPath(); //;; Graph initialization begins here
 	draw.strokeStyle = '#0f0';
 	draw.lineWidth = 2;
-	for (i = 0; i < t_length; i++) {
+	for (i = 0; i <= t_length; i++) {
 		//;; Two functions are used here so that the resulting waveform is stepped (not interpolated).
+		draw.lineTo((smpWidth*i),(smpHeight*(-idata[i-1])+canvas.height));
 		draw.lineTo((smpWidth*i),(smpHeight*(-idata[i])+canvas.height));
-		draw.lineTo((smpWidth*i),(smpHeight*(-idata[i+1])+canvas.height));
 	}
 	draw.stroke();
 }
