@@ -33,10 +33,6 @@
         name="FUNC"
         class="textfield-input"
       /><br />
-      <b>Format:</b>
-      <input class="radio" type="radio" name="sign" value="0" checked="checked" />unsigned |
-      <input class="radio" type="radio" name="sign" value="1" />signed
-      <br />
 	  <b>Distortion:</b>
       <input class="radio" type="radio" name="clamp" value="0" />none |
       <input class="radio" type="radio" name="clamp" value="1" checked="checked" />clip |
@@ -59,6 +55,9 @@
       <input class="radio" type="radio" name="separator" value="," />"," |
       <input class="radio" type="radio" name="separator" value="nl" />"\n"
       <br />
+      <b>Signed output (only applies to hex output):</b>
+      <input class="radio" type="radio" name="sign" value="0" checked="checked" />unsigned |
+      <input class="radio" type="radio" name="sign" value="1" />signed
       <br />
       <input type="button" value="Calculate" onclick="calcmain()" class="button" /><br />
       <p>Output:</p>
@@ -72,37 +71,50 @@
       <canvas id="graphcanvas" width="874px" height="200px"></canvas>
     </form>
 	<p>This page has been adapted from an old FC2 PPMCK page. I preserved it and roughly translated it to preserve it and open the tool up for international audiences. I also updated it along the way with some extra features (value clamping for most options is a new feature here). Special thanks to DEFENSE MECHANISM for helping prepare this page in particular. Original page by h7 (h7mailmail-at-yahoo co jp) (I am unsure if that address is still active, try your luck!)</p>
+    <a href="https://github.com/melonadem/wavegen">This site is open source!</a>
 <!-- HELP DIV -->
     <div class="help" id="help">
         <h2>Help</h2>
     	<p>This is a tool to generate waveforms for soundchips like the N163, Gameboy, PC-Engine/HuC6280, SCC (K051649/K052539), FDS and others by adusting the parameters.</p>
     	<h2>Parameters</h2>
-    	<p>"Length" sets the maximum numbers of samples to take from the resulting function (default is 32, other presets have their own default they can set).
+    	<p>"Length" adjusts the total number of sample points present in the waveform, the default is 32. This corresponds to the horizontal axis on the graph.
         <br/>
-        "Depth" sets the bit depth of the resulting waveform (default is 15).
-        <br/>
+        "Depth" configures the amplitude of each sample in the waveform, this is analogous to the bit depth of it. The default value is 15, corresponding to a 4-bit depth, represented by the vertical axis on the graph.
+        <br/><br/>
         For all non-floating number output options, all samples will be rounded down to the nearest step in the bitdepth (Essentially, Math.floor(x) is done for every sample so it lands on a step).
         <br/>
         The distortion selector allows for 4 distortion options, and a toggleable "absolute" box leading to 8 unique options to choose from.
         <ul>
-            <li>None - do not distort the output.</li>
-            <li>Clip - ensure the waveform stays within -1 to 1 range (0 to max depth) by limiting the output.</li>
-            <li>Fold - if the waveform crosses the range, reflect it the opposite way. Do this as many times as needed (can create multi-reflection waveforms)</li>
-            <li>Wrap - if the waveform crosses the range, wrap the waveform to come out from the opposite side. Similar to fold mode, slightly different in processing</li>
-            <li>Absolute - toggleable; if this is selected, negative values will become positive, reflecting part of the waveform. Toggleable as it is calculated after distortion processing.</li>
+            <li>None - do not distort the output. This can cause the final waveform to have values out of bounds.</li>
+            <li>Clip - ensure the waveform stays within bounds by limiting the output.</li>
+            <li>Fold - if the waveform crosses bounds, reflect it the opposite way. Do this as many times as needed (can create multi-reflection waveforms)</li>
+            <li>Wrap - if the waveform crosses bounds, wrap the waveform to come out from the opposite side. Similar to fold mode, slightly different in processing</li>
+            <li>Absolute - toggleable; if this is selected, all negative values will become positive, which in some cases mirrors the waveform horizontally. This setting is toggleable as it is calculated after distortion processing.</li>
         </ul>
         </p>
     	<h2>Usage</h2>
-    	<p>The phase of a waveform can be shifted by adding or subtracting a number to or from p. (0 to 1 represents 0° to 360° - 0.25 is 90°, 0.50 is 180°, 0.75 is 270°)<br/>
+    	<p>The phase of a waveform can be shifted by adding or subtracting a number to or from operator "p". (0 to 1 represents 0° to 360° - 0.25 is 90°, 0.50 is 180°, 0.75 is 270°)<br/>
             The available waveforms are as follows:<br/>
             <code>sin(y*p+x)</code> - generates a sine wave of y*p periods, whose phase is shifted by +x.<br/>
             <code>saw(y*p+x)</code> - generates a sawtooth wave. Same parameters as sin().<br/>
-            <code>tri(y*p+x,z)</code> - generates a triangle wave. Same parameters as sin(), but with the addition of asymmetry ratio "z", 0.5 represents a symmetric waveform.<br/>
-            <code>squ(y*p+x,z)</code> - generates a square wave. Same parameters as tri().<br/>
-            In all cases, value "p" needs to be present as is (don't replace it with a number, type in p). For example: sin(p) will generate a simple sine wave. sin(2*p) will generate a higher pitch sine wave (by an octave). This works out like FM multiplication values.
+            <code>tri(y*p+x,z)</code> - generates a triangle wave. Same parameters as sin(), but with the addition of peak position "z", 0.5 represents a symmetric waveform.<br/>
+            <code>squ(y*p+x,z)</code> - generates a square wave. Same parameters as tri(), the parameter "z" controls the pulse width of the waveform.<br/>
+            "p" is not a parameter that can be modified and in all cases must be included as-is.
         </p>
         <h2>Examples</h2>
-    	<p>Please take a look at the examples below and feel free to experiment.</p>
+    	<p>You can copy & paste these examples into the function input, please tweak them as needed!</p>
+        <code>squ(p, 0.25)</code> - generates a 25% pulse width waveform.<br/>
+        <code>tri(2*p+0.50, 0.60)</code> - generates two triangle waves, whose phase is shifted by 180 degrees and has the wave peak shifted to at 60% of the wave.<br/>
+        <code>0.5*sin(p) + 0.5*sin(2.0*p)</code> - you can achieve additive synthesis by adding together multiple functions at different frequencies (multipliers).<br/>
+        <code>sin(1.0*p + 0.14*sin(1.0*p))</code> - rudimentary 2-operator FM synthesis can be achieved as well!<br/>
+        <code>(p < 1/2.5 ? sin(2.5*p) : 0)</code> - using ternary to generate an interesting bass-like waveform.<br/>
+        <code>p <= 1/8 ? sin(0.125+p*8) : -sin(0.2+p*2.33)</code> - using ternary again, this time to generate a classic Namco wavetable sound.<br/>
+        <code>(p = (p < 0.5 ? p:1+p)*2)*0 + saw(Math.pow(p,3.7))</code> - the function parser can accept Javascript (as this tool is JS)!<br/><br/><br/>
+    </div>
+
+
+
+        <!--
         <div id="examples" class="examples" height="400px">
             <div id="ex-type" class="ex-type">
                 <input class="example-radio" type="radio" name="exampleType" value="0" checked="checked" />Simple<br/>
@@ -117,7 +129,7 @@
             </div>
 
         </div>
-        <!--
+
         <table>
     	<tbody>
     	<tr><th>sin(p)</th><td><img src=" data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAASAQMAAAAJ7e5rAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAABlBMVEUAAAAA1ABAM7nUAAAANklEQVQI12NgQAKMP0Ak8x8Qyf4PQfL/B5Hy/xvgpP3/A2DyAYMDnPzAcABI/mBEkP/BquAAALzxG9+WzQGQAAAAAElFTkSuQmCC"></td><td>Sine wave</td></tr>
