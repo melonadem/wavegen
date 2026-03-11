@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-        <title>Wavegen</title>
+        <title>Wavegen - A Chiptune Wavetable Formula Parser</title>
         <link rel="stylesheet" href="style.css">
         <script type="text/javascript" src="wavegen.js"></script>
     </head>
@@ -12,8 +12,10 @@
       This form requires Javascript. Please enable it.
     </noscript>
     <p>
-      <a onclick="showHelp()">Help</a><br />
+      <a onclick="showHelp()" id="helptext">Help</a><br />
+      Last updated: 2026.03.11
     </p>
+    <div class="gen" id="gen">
     <form name="F1" action="#">
       <b>Preset:</b>
       <input class="radio" type="radio" name="preset" value="fds" onclick="nmpreset(64,63,0)" />FDS |
@@ -72,12 +74,162 @@
     </form>
 	<p>This page has been adapted from an old FC2 PPMCK page. I preserved it and roughly translated it to preserve it and open the tool up for international audiences. I also updated it along the way with some extra features (value clamping for most options is a new feature here). Special thanks to DEFENSE MECHANISM for helping prepare this page in particular. Original page by h7 (h7mailmail-at-yahoo co jp) (I am unsure if that address is still active, try your luck!)</p>
     <a href="https://github.com/melonadem/wavegen">This site is open source!</a>
+    </div>
 <!-- HELP DIV -->
     <div class="help" id="help">
+        <p>This help section is a bit of a mess, but should go in much greater detail than previously...</p>
         <h2>Help</h2>
-    	<p>This is a tool to generate waveforms for soundchips like the N163, Gameboy, PC-Engine/HuC6280, SCC (K051649/K052539), FDS and others by adusting the parameters.</p>
+    	<p>Wavegen is a utility that allows you to generate a waveform for use with various chiptune systems using a formula.<br>This manual will cover the accepted parameters as well as usage examples.</p>
     	<h2>Parameters</h2>
-    	<p>"Length" adjusts the total number of sample points present in the waveform, the default is 32. This corresponds to the horizontal axis on the graph.
+        <details>
+            <summary>Length</summary>
+            Defines how long the waveform generated should be. Typically 32, but can be arbitrary.<br>Note that selecting a preset will overwrite this setting.
+        </details><br>
+        <details>
+            <summary>Depth</summary>
+            Defines how much granularity each entry in the waveform has. Typically 15 (counting from 0 inclusive), selecting a preset will overwrite this setting.<br>
+            If you would like to target a specific system, then the best way to calculate this is via the following formula: <code>2^x-1</code>, where x represents the the bit depth of the targeted system (e.g. N163 uses 4-bit values for each waveform step, FDS uses 6-bit values, SCC uses 8-bit values).
+        </details><br>
+        <details>
+            This is the main way to interact with the tool. Enter a desired function to generate a waveform.
+            <ul>
+                <li>Parameter p is used for phase. On its own, it's just a linear function that starts from -1.0f and ends at +1.0f, but when combined with actual functions, you can transform this into actual oscillations of waveforms.</li>
+                <ul>
+                    <li>If you multiply this number, you're basically increasing how many oscillations it generates in a given interval when using with one of the functions below.</li>
+                    <li>Similarly, adding to this number alters the starting phase.</li>
+                </ul>
+            </ul>
+
+            <details>
+                <summary><code>sin(p)</code> generates a sine wave.</summary>
+                <ul>
+                    <li>Multiplying p by a number will increase how many oscillations will get generated.</li>
+                    <li>You can shift the starting phase by adding another number.</li>
+                    <ul>
+                        <li><code>sin(2*p)</code> generates a sine wave an octave above the played note, harmonically speaking.</li>
+                        <li><code>sin(p+0.25)</code> shifts the phase by 90 degrees.</li>
+                        <li><code>sin(2*p + 0.25)</code> generates a sine wave an octave above the played note, at a phase of 90 degrees.</li>
+                    </ul>
+                </ul>
+            </details><br>
+            <details>
+                <summary><code>saw(p)</code> generates a sawtooth wave.</summary>
+                <ul>
+                    <li>Like with the <code>sin(p)</code> function, you can multiply or alter the phase by multiplying or adding to p respectively.</li>
+                </ul>
+            </details><br>
+            <details>
+                <summary><code>tri(p)</code> generates a triangle wave.</summary>
+                <ul>
+                    <li>Like with the <code>sin(p)</code> function, you can multiply or alter the phase by multiplying or adding to p respectively.</li>
+                    <li>Adding a comma and then specifying a number between 0.0 and 1.0f lets you determine where the peak of the triangle will be situated. Default is 0.5.</li>
+                    <li><code>tri(p,0.25)</code> generates an asymmetrical triangle with the peak occurring at the 25% point of the cycle.</li>
+                </ul>
+            </details><br>
+            <details>
+                <summary><code>squ(p)</code> generates a square wave.</summary>
+                <ul>
+                    <li>Like with the <code>tri(p)</code> function, you can multiply or alter the phase by multiplying or adding to p respectively, and the comma defines the pulse width in this case, so for instance, squ(p,0.25) generates a 25% pulse width waveform.</li>
+                </ul>
+            </details><br>
+            <details>
+                <summary>JavaScript functions are considered valid.</summary>
+                <ul>
+                    <li>An example: <code>p <= 1/8 ? sin(0.125+p*8) : -sin(0.2+p*2.33)</code> demonstrates ternary operations as part of the formula.</li>
+                    <li>Mathematical arguments like <code>Math.pow()</code> can also be used.</li>
+                </ul>
+            </details><br>
+            <details>
+                <summary>Any maths used with formulas is also valid.</summary>
+                <ul>
+                    <li><code>0.25 * saw(1.5*p)</code> will lower the saw function's volume to 25%.</li>
+                    <li><code>0.5 * squ(2*p) + 0.5 * squ (3*p + 0.25)</code> generates two square wave sounds, tuned to the 2nd and 3rd harmonic specifically.</li>
+                    <ul>
+                        <li>The second tone is phase shifted by 90. Note how using the addition parameter (aka the plus symbol) can be used to add multiple different sounds together to generate more complex waveforms.</li>
+                    </ul>
+                    <li><code>sin(1.0*p + 0.14*sin(1.0*p))</code> generates a phase-modulated sound, very similar to how Yamaha's sound chips work.</li>
+                    <ul>
+                        <li>Demonstrates that you can do complex math inside a function, in this case using a sin function within a sin itself.</li>
+                        <li><code>1.0 * p</code> inside the sin functions work similarly to "multiplier" values found on Yamaha FM chips. Setting this to 2.0 will be like setting that multiplier to 2.</li>
+                        <li>0.14 works like a modulation amount. Increase to get a more dramatic effect.</li>
+                    </ul>
+                </ul>
+            </details>
+        </details><br>
+        <details>
+            <summary>Distortion</summary>
+            Four distortion settings are provided plus a modifier.
+            <ul>
+                <li>None - no distortion or limiting will be applied at all.</li>
+                <ul>
+                    <li>Not recommended. If the waveform goes out of bounds, values will not be appropriately clipped.</li>
+                </ul>
+                <li>Clip - Out of bounds values will be clipped to respective minimum/maximum values.</li>
+                <ul>
+                    <li>This is the default setting.</li>
+                </ul>
+                <li>Fold - Any out of bounds values will be folded (bounced or reflected).</li>
+                <ul>
+                    <li>This is repeatable, if the waveform is so distorted that it can fold twice, it will fold twice.</li>
+                </ul>
+                <li>Wrap - Any out of bounds values will be wrapped around from the opposing side. Works like integer under/overflows.</li>
+                <ul>
+                    <li>This is repeatable, if the waveform is so distorted that it can wrap twice, it will wrap twice.</li>
+                </ul>
+                <li>In addition, an "absolute" toggle is provided. With this setting on, the bottom half of the waveform is rectified by interpreting any negative values as positive.</li>
+            </ul>
+        </details><br>
+        <details>
+            <summary>Output format</summary>
+            Six output formats are currently defined.
+            <ul>
+                <li>Decimal - represents the output in decimal form.</li>
+                <li>$XXh - Represents the output in hexadecimal with a preceding $</li>
+                <li>0xXXh - Represents the output in hexadecimal with a preceding 0x</li>
+                <li>XXh - Represents the output in hexadecimal with no preceding value.</li>
+                <li>Xh - Represents the output in hexadecimal, intended for LSDj use.</li>
+                <li>float - Represents the output in float form. <strong>Please note that using this option bypasses truncation to a specified bit depth.</strong></li>
+            </ul>
+            Please note that as of right not all of the hex output modes are a little bugged - they will only pad values up to 1 byte (for values less than 0x10).
+        </details><br>
+        <details>
+            <summary>Separator</summary>
+            <ul>
+                <li>"" - No separation, useful if storing raw hex data.</li>
+                <li>" " - Separated by 1 space.</li>
+                <li>", " - Separated by comma and space.</li>
+                <li>"," - Separated by comma but with no preceding space.</li>
+                <li>"\n" - Separated by new line</li>
+            </ul>
+        </details><br>
+        <details>
+            <summary>Signed output</summary>
+            Some systems expect storage to be done in signed form, meaning positive numbers take the first half of the bit depth, and the 2nd half is used for negative numbers.
+            <ul>
+                <li>As an example, 8-bit systems typically would use 00 to 7F to represent positive numbers (00-127 in decimal), and then FF to 80 to represent negative numbers (-1 to -128).
+                    It starts from FF because trying to subtract 1 from 0 in a typical 8-bit system would lead to an underflow as there's nowhere to borrow a "1" from, thus resulting in FF, or setting all bits within this byte to 1.</li>
+                <li>Please note this only works correctly for 8-bit values as of right now.</li>
+            </ul>
+        </details><br>
+        <details>
+            <summary>Future plans</summary>
+            This isn't really help but I want to go and revise some of the UI and functionality to the best of my ability.<br>
+            <ul>
+                <li>Simplify functionality by only having dec/hex/float output formats</li>
+                <li>to augment the above add an editable "separator" field</li>
+                <li>add options for padding bytes (e.g. if 12-bit values are being generated, pad anything less than hex 100 to 3 digits so that you don't go from 1FF to 3, instead going from 1FF to 003</li>
+                <li>Redress the "depth" into a bit depth field that calculates the actual depth in numbers as opposed to an absolute value</li>
+                <ul>
+                    <li>Have an option for absolute available, though, if required by an user</li>
+                </ul>
+                <li>Revise the interface, swapping out radio buttons for drop down menus</li>
+                <li>Revised presets that sets appropriate output options as well</li>
+                <li>More responsive UI that scales better with page size</li>
+            </ul>
+        </details>
+
+
+    	<!-- <p>"Length" adjusts the total number of sample points present in the waveform, the default is 32. This corresponds to the horizontal axis on the graph.
         <br/>
         "Depth" configures the amplitude of each sample in the waveform, this is analogous to the bit depth of it. The default value is 15, corresponding to a 4-bit depth, represented by the vertical axis on the graph.
         <br/><br/>
@@ -109,27 +261,12 @@
         <code>sin(1.0*p + 0.14*sin(1.0*p))</code> - rudimentary 2-operator FM synthesis can be achieved as well!<br/>
         <code>(p < 1/2.5 ? sin(2.5*p) : 0)</code> - using ternary to generate an interesting bass-like waveform.<br/>
         <code>p <= 1/8 ? sin(0.125+p*8) : -sin(0.2+p*2.33)</code> - using ternary again, this time to generate a classic Namco wavetable sound.<br/>
-        <code>(p = (p < 0.5 ? p:1+p)*2)*0 + saw(Math.pow(p,3.7))</code> - the function parser can accept Javascript (as this tool is JS)!<br/><br/><br/>
+        <code>(p = (p < 0.5 ? p:1+p)*2)*0 + saw(Math.pow(p,3.7))</code> - the function parser can accept Javascript (as this tool is JS)!<br/><br/><br/> -->
     </div>
 
 
 
         <!--
-        <div id="examples" class="examples" height="400px">
-            <div id="ex-type" class="ex-type">
-                <input class="example-radio" type="radio" name="exampleType" value="0" checked="checked" />Simple<br/>
-                <input class="example-radio" type="radio" name="exampleType" value="1" />Complex<br/>
-                <input class="example-radio" type="radio" name="exampleType" value="2" />Classic Examples<br/>
-            </div>
-            <div id="ex-select" class="ex-select">
-                blah blah blah
-            </div>
-            <div id="ex-graph" class="ex-graph">
-                <canvas id="ex-graphcanvas" width="600px" height="400px"></canvas>
-            </div>
-
-        </div>
-
         <table>
     	<tbody>
     	<tr><th>sin(p)</th><td><img src=" data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAASAQMAAAAJ7e5rAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAABlBMVEUAAAAA1ABAM7nUAAAANklEQVQI12NgQAKMP0Ak8x8Qyf4PQfL/B5Hy/xvgpP3/A2DyAYMDnPzAcABI/mBEkP/BquAAALzxG9+WzQGQAAAAAElFTkSuQmCC"></td><td>Sine wave</td></tr>

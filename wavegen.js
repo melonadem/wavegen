@@ -390,6 +390,16 @@ function tooltip() {
 
 function showHelp() {
 	var helpVisibility = document.getElementById("help");
-	helpVisibility.style.display = "block";
-	document.getElementById("help").scrollIntoView({behavior: 'smooth'});
+	var genVisibility = document.getElementById("gen");
+	var helpText = document.getElementById("helptext");
+	if (helpVisibility.style.display != "block") {
+		helpVisibility.style.display = "block";
+		genVisibility.style.display = "none";
+		helpText.innerText = "Back";
+	} else {
+		helpVisibility.style.display = "none";
+		genVisibility.style.display = "block";
+		helpText.innerText = "Help";
+	}
+	//document.getElementById("help").scrollIntoView({behavior: 'smooth'});
 }
