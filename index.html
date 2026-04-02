@@ -13,7 +13,7 @@
     </noscript>
     <p>
       <a onclick="showHelp()" id="helptext">Help</a><br />
-      Last updated: 2026.03.11
+      Last updated: 2026.04.02
     </p>
     <div class="gen" id="gen">
     <form name="F1" action="#">
@@ -61,7 +61,8 @@
       <input class="radio" type="radio" name="sign" value="0" checked="checked" />unsigned |
       <input class="radio" type="radio" name="sign" value="1" />signed
       <br />
-      <input type="button" value="Calculate" onclick="calcmain()" class="button" /><br />
+      <input type="button" value="Calculate" onclick="calcmain(0)" class="button" /><input type="button" value="Download WAV*" onclick="calcmain(1)" class="button" /><br />
+      <p>* - Wav output is currently based on float, it does not respect the bitdepth setting. This will be rectified in the future.</p>
       <p>Output:</p>
       <div class="tooltip" id="tooltipBody">
           <textarea cols="99" rows="3" name="TEXT" onclick="selectText()" id="waveout" onmouseover="tooltip()" readonly></textarea>

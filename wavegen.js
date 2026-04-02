@@ -4,6 +4,7 @@ var pi = Math.pi;
 var t_length;	// Length axis
 var y_height;	// Amplitude axis (max waveform value +1)
 var squ_amp; // Amplitude of square wave
+const hzPerSample = 261.34375;
 
 // Limit range from 0 to 1
 function norm1(x) {
@@ -87,7 +88,7 @@ function toHexStr(num, prefix_str, signed_check, usePrefix=true) {
 
 // ;; The main calculate function, calculate how the waveform should be drawn with floating point numbers
 // ;; Also read the radio button settings and stay within their bounds
-function calcmain() {
+function calcmain(genWav) {
 	t_length = parseInt(window.document.F1.N.value);
 	y_height = parseInt(window.document.F1.M.value) + 1;
     squ_amp = ((y_height - 1) / y_height);
@@ -351,6 +352,82 @@ function calcmain() {
 		draw.lineTo((smpWidth*i),(smpHeight*(-idata[i])+canvas.height));
 	}
 	draw.stroke();
+
+	if (genWav) {
+////////////////////////////////////////////////////////////////////////////////
+//// WAV EXPORTER //////////////////////////////////////////////////////////////
+		function encodeWAV() {
+			const sampleRate = Math.round(hzPerSample * t_length);
+			const loopEnd = t_length - 1;
+
+			const smplSize = 68;
+			const buffer = new ArrayBuffer(44 + t_length * 2 + smplSize);
+			const view = new DataView(buffer);
+
+			const writeString = (offset, str) => {
+			for (let i = 0; i < str.length; i++)
+				view.setUint8(offset + i, str.charCodeAt(i));
+			};
+
+			// RIFF header
+			writeString(0, 'RIFF');
+			view.setUint32(4, 36 + t_length * 2 + smplSize, true);
+			writeString(8, 'WAVE');
+
+			// fmt chunk
+			writeString(12, 'fmt ');
+			view.setUint32(16, 16, true);
+			view.setUint16(20, 1, true);
+			view.setUint16(22, 1, true);
+			view.setUint32(24, sampleRate, true);
+			view.setUint32(28, sampleRate * 2, true);
+			view.setUint16(32, 2, true);
+			view.setUint16(34, 16, true);
+
+			// data chunk
+			writeString(36, 'data');
+			view.setUint32(40, t_length * 2, true);
+
+			for (let i = 0; i < t_length; i++) {
+				const s = Math.max(-1, Math.min(1, fdata[i]));
+				view.setInt16(44 + i * 2, Math.round(s * 32767), true);
+			}
+
+			// smpl chunk
+			const smplOffset = 44 + t_length * 2;
+			writeString(smplOffset, 'smpl');
+			view.setUint32(smplOffset + 4,  60, true);
+			view.setUint32(smplOffset + 8,  0, true);
+			view.setUint32(smplOffset + 12, 0, true);
+			view.setUint32(smplOffset + 16, Math.round(1e9 / sampleRate), true);
+			view.setUint32(smplOffset + 20, 60, true);
+			view.setUint32(smplOffset + 24, 0, true);
+			view.setUint32(smplOffset + 28, 0, true);
+			view.setUint32(smplOffset + 32, 0, true);
+			view.setUint32(smplOffset + 36, 1, true);
+			view.setUint32(smplOffset + 40, 0, true);
+			view.setUint32(smplOffset + 44, 0, true);
+			view.setUint32(smplOffset + 48, 0, true);
+			view.setUint32(smplOffset + 52, 0, true);
+			view.setUint32(smplOffset + 56, loopEnd, true);
+			view.setUint32(smplOffset + 60, 0, true);
+			view.setUint32(smplOffset + 64, 0, true);
+
+			return buffer;
+		}
+
+		function downloadWAV(filename = 'waveform.wav') {
+			const buffer = encodeWAV();
+			const blob = new Blob([buffer], { type: 'audio/wav' });
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = filename;
+			a.click();
+			URL.revokeObjectURL(url);
+		}
+		downloadWAV();
+	}
 }
 
 //;; Function to set wavetable parameters based on the preset format selected.
@@ -403,3 +480,4 @@ function showHelp() {
 	}
 	//document.getElementById("help").scrollIntoView({behavior: 'smooth'});
 }
+
