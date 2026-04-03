@@ -17,16 +17,31 @@
     </p>
     <div class="gen" id="gen">
     <form name="F1" action="#">
-      <b>Preset:</b>
-      <input class="radio" type="radio" name="preset" value="fds" onclick="nmpreset(64,63,0)" />FDS |
-      <input class="radio" type="radio" name="preset" value="n106" onclick="nmpreset(32,15,0)" />N163/GB |
-      <input class="radio" type="radio" name="preset" value="hes" onclick="nmpreset(32,31,0)" />PC-E |
-      <input class="radio" type="radio" name="preset" value="scc" onclick="nmpreset(32,255,1)" />SCC
+      <label for="system-preset"><b>Preset:</b></label>
+      <select onchange="nmpreset(
+        parseInt(this.options[this.selectedIndex].dataset.length),
+        parseInt(this.options[this.selectedIndex].dataset.depth),
+        this.options[this.selectedIndex].dataset.sign === 'true'
+      )" name="systems" id="systems-selector">
+        <optgroup label="Wavetable chips">
+            <option data-length="64", data-depth="6", data-sign="false">Nintendo FDS / Ricoh RP2C33</option>
+            <option data-length="32", data-depth="4", data-sign="false" selected>Namco WSG, C15, C30, C163 and Nintendo Gameboy</option>
+            <option data-length="32", data-depth="5", data-sign="false">NEC PC-Engine/Turbografx16 / HuC6280</option>
+            <option data-length="32", data-depth="8", data-sign="true"">Konami SCC/SCC+</option>
+        </optgroup>
+        <optgroup label="Furnace generic options">
+            <option data-length="32", data-depth="8", data-sign="false">32-step</option>
+            <option data-length="64", data-depth="8", data-sign="false">64-step</option>
+            <option data-length="128", data-depth="8", data-sign="false">128-step</option>
+            <option data-length="256", data-depth="8", data-sign="false">256-step</option>
+        </optgroup>
+      </select>
       <br />
       <b>Length:</b>
       <input class="textfield-input" type="text" value="32" size="4" name="N" onchange="uncheckradio()" /><br />
-      <b>Depth:</b>
-      <input class="textfield-input" type="text" value="15" size="4" name="M" onchange="uncheckradio()" /><br />
+      <b>Bit Depth:</b>
+      <input class="textfield-input" type="range" id="depth-slider" min="1" max="32" value="4" size="4" name="M"/>
+      <span id="depth-label">4-bit</span><br />
       <b>Function:</b>
       <input
         type="text"
@@ -35,12 +50,20 @@
         name="FUNC"
         class="textfield-input"
       /><br />
-	  <b>Distortion:</b>
+	  <label for="distortion-mode"><b>Distortion:</b></label>
+        <select name="distselect" id="distselect">
+            <option value="0" disabeld>None</option>
+            <option value="1" selected>Clip</option>
+            <option value="2">Fold</option>
+            <option value="3">Wrap</option>
+        </select>
+      <!-- old selector stuff
       <input class="radio" type="radio" name="clamp" value="0" />none |
       <input class="radio" type="radio" name="clamp" value="1" checked="checked" />clip |
 	  <input class="radio" type="radio" name="clamp" value="2" />fold |
-	  <input class="radio" type="radio" name="clamp" value="3" />wrap |
+	  <input class="radio" type="radio" name="clamp" value="3" />wrap |-->
       <input class="checkbox" type="checkbox" name="abscheck"/>absolute
+      
       <br />
       <b>Output format:</b>
       <input class="radio" type="radio" name="format" value="0" checked="checked" />decimal |
@@ -61,8 +84,7 @@
       <input class="radio" type="radio" name="sign" value="0" checked="checked" />unsigned |
       <input class="radio" type="radio" name="sign" value="1" />signed
       <br />
-      <input type="button" value="Calculate" onclick="calcmain(0)" class="button" /><input type="button" value="Download WAV*" onclick="calcmain(1)" class="button" /><br />
-      <p>* - Wav output is currently based on float, it does not respect the bitdepth setting. This will be rectified in the future.</p>
+      <input type="button" value="Calculate" onclick="calcmain(0)" class="button" /><input type="button" value="Download WAV" onclick="calcmain(1)" class="button" /><br />
       <p>Output:</p>
       <div class="tooltip" id="tooltipBody">
           <textarea cols="99" rows="3" name="TEXT" onclick="selectText()" id="waveout" onmouseover="tooltip()" readonly></textarea>
@@ -88,8 +110,7 @@
         </details><br>
         <details>
             <summary>Depth</summary>
-            Defines how much granularity each entry in the waveform has. Typically 15 (counting from 0 inclusive), selecting a preset will overwrite this setting.<br>
-            If you would like to target a specific system, then the best way to calculate this is via the following formula: <code>2^x-1</code>, where x represents the the bit depth of the targeted system (e.g. N163 uses 4-bit values for each waveform step, FDS uses 6-bit values, SCC uses 8-bit values).
+            Defines the bit-depth of the resulting waveform. The value is used in the formula: <code>2^x-1</code>, where x represents the the bit depth of the targeted systemm.
         </details><br>
         <details>
             This is the main way to interact with the tool. Enter a desired function to generate a waveform.
@@ -164,6 +185,7 @@
                 <li>None - no distortion or limiting will be applied at all.</li>
                 <ul>
                     <li>Not recommended. If the waveform goes out of bounds, values will not be appropriately clipped.</li>
+                    <li>Disabled by default, but if you force it to this setting, it will work as "intended".</li>
                 </ul>
                 <li>Clip - Out of bounds values will be clipped to respective minimum/maximum values.</li>
                 <ul>

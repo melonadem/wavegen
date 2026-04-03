@@ -89,8 +89,11 @@ function toHexStr(num, prefix_str, signed_check, usePrefix=true) {
 // ;; The main calculate function, calculate how the waveform should be drawn with floating point numbers
 // ;; Also read the radio button settings and stay within their bounds
 function calcmain(genWav) {
+	var bitDepthVal = parseInt(window.document.F1.M.value);
 	t_length = parseInt(window.document.F1.N.value);
-	y_height = parseInt(window.document.F1.M.value) + 1;
+	y_height = Math.pow(2, bitDepthVal);
+
+
     squ_amp = ((y_height - 1) / y_height);
     /* y_height = the height defined in the waveform amplitude value
      * dividing this by itself, with the dividend having one less than the divisor gives us a good approximation of the waveform in floating point.
@@ -117,6 +120,13 @@ function calcmain(genWav) {
     function normalize(x) {
     	return Math.floor(x*(y_height/2) + y_height/2);
     }
+	function normalize_signed(x) {
+		return Math.floor(x*(y_height/2));
+	}
+	function float_normalise(x) {
+		const quant = Math.floor(x * squ_amp * (y_height / 2));
+		return ((quant / (y_height / 2)));
+	}
 	// ;; This function makes the wrap distortion work properly by adjusting the offset of the waveform when it crosses over the boundries.
 	function stairDouble(x) {
 		return Math.ceil((Math.abs(x)-1)/2)*2;
@@ -135,20 +145,14 @@ function calcmain(genWav) {
     // ;; This is where the results are appended to strings and the graph is generated.
 	var result_vals = new Array(t_length);
     var i;
-    var c;
+    var c = window.document.getElementById("distselect").selectedIndex;
 
     // ;; Check which distortion option is selected
     var distMethod = 0;
-    for (i = 0; i < window.document.F1.clamp.length; i++)
-    {
-        if (window.document.F1.clamp[i].checked)
-        {
-            c = i;
-            break;
-        }
-    }
+
+
     //;; This block of switch statements will put the integers in idata[i] and fdata[i], depending on which distortion mode is selected.
-    /* None - output as is.
+    /* None - output as is. Disabled, as it is not a recommended output mode.
      * Clip - replace values beyond the maximum/minimum allowed range with their maximum/minimum counterparts.
      * Fold - invert values beyond the maximum/minimum range so that they still stay in range.
      * Wrap - values beyond the maximum/minimum range will be wrapped to the opposite side creating gnarly effects.
@@ -157,19 +161,19 @@ function calcmain(genWav) {
 	 Honestly, this code is kind of a mess. There's probably good ways to clean this up, but I don't really know of them (yet).
      */
     switch (c) {
-		case 0: // ;;none
+		case 0: // ;;none. not recommended to use!
 		default:
             for (t = 0 ; t < t_length; t++) {
         		var p = (t + 0.5) / t_length;
         		var y;
         		y = datafunction(p);
 				if (window.document.F1.abscheck.checked) {
-					fdata[t] = (Math.abs(y))*2-1;
 					idata[t] = normalize((Math.abs(y))*2-1);
+					fdata[t] = float_normalise((Math.abs(y))*2-1);
 				}
 				else {
-					fdata[t] = y;
-	                idata[t] = normalize(y);
+					idata[t] = normalize(y);
+					fdata[t] = float_normalise(y);
 				}
         	}
         break;
@@ -184,15 +188,15 @@ function calcmain(genWav) {
                     y = -squ_amp;
                 }
                 else {
-        		y = datafunction(p);
+        			y = datafunction(p);
                 }
 				if (window.document.F1.abscheck.checked) {
-					fdata[t] = (Math.abs(y))*2-1;
 					idata[t] = normalize((Math.abs(y))*2-1);
+					fdata[t] = float_normalise((Math.abs(y))*2-1);
 				}
 				else {
-					fdata[t] = y;
-	                idata[t] = normalize(y);
+					idata[t] = normalize(y);
+					fdata[t] = float_normalise(y);
 				}
         	}
         break;
@@ -218,12 +222,12 @@ function calcmain(genWav) {
         		y = datafunction(p);
                 }
 				if (window.document.F1.abscheck.checked) {
-					fdata[t] = (Math.abs(y))*2-1;
 					idata[t] = normalize((Math.abs(y))*2-1);
+					fdata[t] = float_normalise((Math.abs(y))*2-1);
 				}
 				else {
-					fdata[t] = y;
-	                idata[t] = normalize(y);
+					idata[t] = normalize(y);
+					fdata[t] = float_normalise(y);
 				}
             }
         break;
@@ -241,12 +245,12 @@ function calcmain(genWav) {
         		y = datafunction(p);
                 }
 				if (window.document.F1.abscheck.checked) {
-					fdata[t] = (Math.abs(y))*2-1;
 					idata[t] = normalize((Math.abs(y))*2-1);
+					fdata[t] = float_normalise((Math.abs(y))*2-1);
 				}
 				else {
-					fdata[t] = y;
-	                idata[t] = normalize(y);
+					idata[t] = normalize(y);
+					fdata[t] = float_normalise(y);
 				}
         	}
         break;
@@ -257,16 +261,16 @@ function calcmain(genWav) {
 
     // ;; Time to see which output format was selected (and then output in said format)
     var i;
-    var c;
+    var out;
     for (i = 0; i < window.document.F1.format.length; i++)
     {
         if (window.document.F1.format[i].checked)
         {
-            c = i;
+            out = i;
             break;
         }
     }
-	switch (c) {
+	switch (out) {
 		case 0: //decimal
         	for (i = 0; i < t_length; i++) {
         		result_vals[i] = idata[i];
@@ -301,15 +305,15 @@ function calcmain(genWav) {
 
     //;;Select the separator to use for the output string
 	var i;
-	var c;
+	var vsep;
 	for (i = 0; i < window.document.F1.separator.length; i++) {
 		if (window.document.F1.separator[i].checked) {
-			c = i;
+			vsep = i;
 			break;
 		}
 	}
 	var sep;
-	switch (c) {
+	switch (vsep) {
 		case 0: //none ""
 			sep = "";
 			break;
@@ -337,8 +341,8 @@ function calcmain(genWav) {
 	var horizontalError = ((t_length - 1) / t_length); //;; Determine the error amount when using low sample sizes, this is similar to squ_amp issues I have been having above.
 	var canvas = document.getElementById("graphcanvas");
 	var draw = canvas.getContext("2d");
-	var smpWidth = 0.999*((canvas.width / t_length));
-	var smpHeight = 0.99*((canvas.height / y_height) / squ_amp);
+	var smpWidth = ((canvas.width / t_length));
+	var smpHeight = ((canvas.height / y_height) / squ_amp);
 
 	//;; Prepare the canvas when GENERATE is pressed.
 	draw.clearRect(0, 0, canvas.width, canvas.height); //;; Clear the canvas
@@ -354,6 +358,9 @@ function calcmain(genWav) {
 	draw.stroke();
 
 	if (genWav) {
+		if (c == 0) {
+			window.alert("You can't use .WAV export when distortion is set to 'none'!");
+		} else {
 ////////////////////////////////////////////////////////////////////////////////
 //// WAV EXPORTER //////////////////////////////////////////////////////////////
 		function encodeWAV() {
@@ -429,11 +436,12 @@ function calcmain(genWav) {
 		downloadWAV();
 	}
 }
-
+}
 //;; Function to set wavetable parameters based on the preset format selected.
 function nmpreset(n, m, s) {
 	window.document.F1.N.value = n;
 	window.document.F1.M.value = m;
+	setDepthText();
 	window.document.F1.sign[0].checked = 1-s;
 	window.document.F1.sign[1].checked = s;
 }
@@ -481,3 +489,19 @@ function showHelp() {
 	//document.getElementById("help").scrollIntoView({behavior: 'smooth'});
 }
 
+////////////////////////////////////////////////////////////////////////////////
+//// SLIDER STUFF //////////////////////////////////////////////////////////////
+
+function setDepthText() {
+	const depthslider = document.getElementById('depth-slider');
+	const depthlabel = document.getElementById('depth-label');
+	depthlabel.textContent = `${depthslider.value}-bit`;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+	const depthslider = document.getElementById('depth-slider');
+	const depthlabel = document.getElementById('depth-label');
+	depthslider.addEventListener('input', () => {
+		setDepthText();
+	});
+});
