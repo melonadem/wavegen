@@ -326,43 +326,7 @@ function calcmain(genWav) {
 			result_vals[i] = toHexStr(idata[i], prefix, true, 2);
 		}
 		break;
-
-
-
 	}
-	/*
-	switch (out) {
-		case 0: //decimal
-        	for (i = 0; i < t_length; i++) {
-        		result_vals[i] = idata[i];
-        	}
-		break;
-		case 1: //"$XXh"
-			for (i = 0; i < t_length; i++) {
-				result_vals[i] = toHexStr(idata[i], "$", signed_check);
-			}
-		break;
-		case 2: //"0xXXh"
-			for (i = 0; i < t_length; i++) {
-				result_vals[i] = toHexStr(idata[i], "0x", signed_check);
-			}
-		break;
-		case 3: //"XXh"
-		for (i = 0; i < t_length; i++) {
-			result_vals[i] = toHexStr(idata[i], "", signed_check);
-		}
-		break;
-		case 4: //"Xh"
-		for (i = 0; i < t_length; i++) {
-			result_vals[i] = toHexStr(idata[i], "", signed_check, false);
-		}
-		break;
-		case 5: // normalized float
-			for (i = 0; i < t_length; i++) {
-				result_vals[i] = fdata[i];
-			}
-		break;
-	}*/
 
     //;;Select the separator to use for the output string
 	var sep = document.getElementById("separator").value;
@@ -552,4 +516,3 @@ document.addEventListener('DOMContentLoaded', () => {
 		setDepthText();
 	});
 });
-

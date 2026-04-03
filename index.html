@@ -27,7 +27,7 @@
             <option data-length="64", data-depth="6", data-sign="false">Nintendo FDS / Ricoh RP2C33</option>
             <option data-length="32", data-depth="4", data-sign="false" selected>Namco WSG, C15, C30, C163 and Nintendo Gameboy</option>
             <option data-length="32", data-depth="5", data-sign="false">NEC PC-Engine/Turbografx16 / HuC6280</option>
-            <option data-length="32", data-depth="8", data-sign="true"">Konami SCC/SCC+</option>
+            <option data-length="32", data-depth="8", data-sign="true">Konami SCC/SCC+</option>
         </optgroup>
         <optgroup label="Furnace generic options">
             <option data-length="32", data-depth="8", data-sign="false">Fuw - 32-step</option>
@@ -63,11 +63,6 @@
             <option value="2">Fold</option>
             <option value="3">Wrap</option>
         </select>
-      <!-- old selector stuff
-      <input class="radio" type="radio" name="clamp" value="0" />none |
-      <input class="radio" type="radio" name="clamp" value="1" checked="checked" />clip |
-	  <input class="radio" type="radio" name="clamp" value="2" />fold |
-	  <input class="radio" type="radio" name="clamp" value="3" />wrap |-->
       <input class="checkbox" type="checkbox" name="abscheck"/>absolute
       
       <br />
@@ -89,31 +84,10 @@
         </optgroup>
       </select>
       <input type="text" id="prefix" placeholder="Set prefix here (0x, $, etc)">
-
-      <!--
-      <input class="radio" type="radio" name="format" value="0" checked="checked" />decimal |
-      <input class="radio" type="radio" name="format" value="1" />$XXh |
-      <input class="radio" type="radio" name="format" value="2" />0xXXh |
-      <input class="radio" type="radio" name="format" value="3" />XXh |
-      <input class="radio" type="radio" name="format" value="4" />Xh |
-      <input class="radio" type="radio" name="format" value="5" />float
-      -->
       <br />
       <label for="separator"><b>Separator:</b></label>
       <input type="text" id="separator">
-      <!--
-      <input class="radio" type="radio" name="separator" value="" />"" |
-      <input class="radio" type="radio" name="separator" value=" " checked="checked" />" " |
-      <input class="radio" type="radio" name="separator" value=", " />", " |
-      <input class="radio" type="radio" name="separator" value="," />"," |
-      <input class="radio" type="radio" name="separator" value="nl" />"\n"
-      -->
       <br />
-      <!--
-      <b>Signed output (only applies to hex output):</b>
-      <input class="radio" type="radio" name="sign" value="0" checked="checked" />unsigned |
-      <input class="radio" type="radio" name="sign" value="1" />signed
-      <br />-->
       <input type="button" value="Calculate" onclick="calcmain(0)" class="button" /><input type="button" value="Download WAV" onclick="calcmain(1)" class="button" /><br />
       <p>Output:</p>
       <div class="tooltip" id="tooltipBody">
@@ -234,14 +208,19 @@
         </details><br>
         <details>
             <summary>Output format</summary>
-            Six output formats are currently defined.
+            Eight formats are currently defined
             <ul>
-                <li>Decimal - represents the output in decimal form.</li>
-                <li>$XXh - Represents the output in hexadecimal with a preceding $</li>
-                <li>0xXXh - Represents the output in hexadecimal with a preceding 0x</li>
-                <li>XXh - Represents the output in hexadecimal with no preceding value.</li>
-                <li>Xh - Represents the output in hexadecimal, intended for LSDj use.</li>
-                <li>float - Represents the output in float form. <strong>Please note that using this option bypasses truncation to a specified bit depth.</strong></li>
+                <li>Integer - represents the waveform with integers from 0-9, starting from 0.</li>
+                <li>Floating-point - represents the waveform in floating point form, from -1 to 1.</li>
+                <li>Unsigned hexadecimal - positive values only from 0 going up.</li>
+                <li>Signed hexadecimal - Positive and negative values, with respect to the bitdepth.</li>
+                <ul>
+                    <li>Single values - does not pad any of the values to fill out bytes or nybbles</li>
+                    <li>Padded to nearest nybble - pads low values to always take up the same number of characters (e.g. 12-bit D is represented as 00D)</li>
+                    <li>Padded to nearest byte - like above, but for full bytes (12-bit D is padded to 000D instead, which takes 16-bits)</li>
+                </ul>
+                Note that any hex output formats gives you access to a prefix field - you can set this to anything ($ for $xx values, 0x for 0xXX values, etc)
+                
             </ul>
             Please note that as of right not all of the hex output modes are a little bugged - they will only pad values up to 1 byte (for values less than 0x10).
         </details><br>
@@ -249,101 +228,7 @@
             <summary>Separator</summary>
             The separator field lets you define what each value is separated by. By default, it's prefilled with " ".
             Using "\n" will set the separator to be a newline.
-        </details><br>
-        <details>
-            <summary>Signed output</summary>
-            Some systems expect storage to be done in signed form, meaning positive numbers take the first half of the bit depth, and the 2nd half is used for negative numbers.
-            <ul>
-                <li>As an example, 8-bit systems typically would use 00 to 7F to represent positive numbers (00-127 in decimal), and then FF to 80 to represent negative numbers (-1 to -128).
-                    It starts from FF because trying to subtract 1 from 0 in a typical 8-bit system would lead to an underflow as there's nowhere to borrow a "1" from, thus resulting in FF, or setting all bits within this byte to 1.</li>
-                <li>Please note this only works correctly for 8-bit values as of right now.</li>
-            </ul>
-        </details><br>
-        <details>
-            <summary>Future plans</summary>
-            This isn't really help but I want to go and revise some of the UI and functionality to the best of my ability.<br>
-            <ul>
-                <li>Simplify functionality by only having dec/hex/float output formats</li>
-                <li>to augment the above add an editable "separator" field</li>
-                <li>add options for padding bytes (e.g. if 12-bit values are being generated, pad anything less than hex 100 to 3 digits so that you don't go from 1FF to 3, instead going from 1FF to 003</li>
-                <li>Redress the "depth" into a bit depth field that calculates the actual depth in numbers as opposed to an absolute value</li>
-                <ul>
-                    <li>Have an option for absolute available, though, if required by an user</li>
-                </ul>
-                <li>Revise the interface, swapping out radio buttons for drop down menus</li>
-                <li>Revised presets that sets appropriate output options as well</li>
-                <li>More responsive UI that scales better with page size</li>
-            </ul>
         </details>
-
-
-    	<!-- <p>"Length" adjusts the total number of sample points present in the waveform, the default is 32. This corresponds to the horizontal axis on the graph.
-        <br/>
-        "Depth" configures the amplitude of each sample in the waveform, this is analogous to the bit depth of it. The default value is 15, corresponding to a 4-bit depth, represented by the vertical axis on the graph.
-        <br/><br/>
-        For all non-floating number output options, all samples will be rounded down to the nearest step in the bitdepth (Essentially, Math.floor(x) is done for every sample so it lands on a step).
-        <br/>
-        The distortion selector allows for 4 distortion options, and a toggleable "absolute" box leading to 8 unique options to choose from.
-        <ul>
-            <li>None - do not distort the output. This can cause the final waveform to have values out of bounds.</li>
-            <li>Clip - ensure the waveform stays within bounds by limiting the output.</li>
-            <li>Fold - if the waveform crosses bounds, reflect it the opposite way. Do this as many times as needed (can create multi-reflection waveforms)</li>
-            <li>Wrap - if the waveform crosses bounds, wrap the waveform to come out from the opposite side. Similar to fold mode, slightly different in processing</li>
-            <li>Absolute - toggleable; if this is selected, all negative values will become positive, which in some cases mirrors the waveform horizontally. This setting is toggleable as it is calculated after distortion processing.</li>
-        </ul>
-        </p>
-    	<h2>Usage</h2>
-    	<p>The phase of a waveform can be shifted by adding or subtracting a number to or from operator "p". (0 to 1 represents 0° to 360° - 0.25 is 90°, 0.50 is 180°, 0.75 is 270°)<br/>
-            The available waveforms are as follows:<br/>
-            <code>sin(y*p+x)</code> - generates a sine wave of y*p periods, whose phase is shifted by +x.<br/>
-            <code>saw(y*p+x)</code> - generates a sawtooth wave. Same parameters as sin().<br/>
-            <code>tri(y*p+x,z)</code> - generates a triangle wave. Same parameters as sin(), but with the addition of peak position "z", 0.5 represents a symmetric waveform.<br/>
-            <code>squ(y*p+x,z)</code> - generates a square wave. Same parameters as tri(), the parameter "z" controls the pulse width of the waveform.<br/>
-            "p" is not a parameter that can be modified and in all cases must be included as-is.
-        </p>
-        <h2>Examples</h2>
-    	<p>You can copy & paste these examples into the function input, please tweak them as needed!</p>
-        <code>squ(p, 0.25)</code> - generates a 25% pulse width waveform.<br/>
-        <code>tri(2*p+0.50, 0.60)</code> - generates two triangle waves, whose phase is shifted by 180 degrees and has the wave peak shifted to at 60% of the wave.<br/>
-        <code>0.5*sin(p) + 0.5*sin(2.0*p)</code> - you can achieve additive synthesis by adding together multiple functions at different frequencies (multipliers).<br/>
-        <code>sin(1.0*p + 0.14*sin(1.0*p))</code> - rudimentary 2-operator FM synthesis can be achieved as well!<br/>
-        <code>(p < 1/2.5 ? sin(2.5*p) : 0)</code> - using ternary to generate an interesting bass-like waveform.<br/>
-        <code>p <= 1/8 ? sin(0.125+p*8) : -sin(0.2+p*2.33)</code> - using ternary again, this time to generate a classic Namco wavetable sound.<br/>
-        <code>(p = (p < 0.5 ? p:1+p)*2)*0 + saw(Math.pow(p,3.7))</code> - the function parser can accept Javascript (as this tool is JS)!<br/><br/><br/> -->
-    </div>
-
-
-
-        <!--
-        <table>
-    	<tbody>
-    	<tr><th>sin(p)</th><td><img src=" data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAASAQMAAAAJ7e5rAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAABlBMVEUAAAAA1ABAM7nUAAAANklEQVQI12NgQAKMP0Ak8x8Qyf4PQfL/B5Hy/xvgpP3/A2DyAYMDnPzAcABI/mBEkP/BquAAALzxG9+WzQGQAAAAAElFTkSuQmCC"></td><td>Sine wave</td></tr>
-    	<tr><th>squ(p)</th><td><img src=" data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAASAQMAAAAJ7e5rAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAABlBMVEUAAAAA1ABAM7nUAAAAFUlEQVQI12NgQAL2/w9QlfwPpuEAABMXHePd4z1AAAAAAElFTkSuQmCC"></td><td>Square wave</td></tr>
-    	<tr><th>tri(p)</th><td><img src=" data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAASAQMAAAAJ7e5rAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAABlBMVEUAAAAA1ABAM7nUAAAAPklEQVQIHQXBMRWAMBAFsNx/N3REQmUwVgpSkIakjmyQAAAusKFeIk10iFHE4RbTEsvE920phoSWJnJSDwD8kuYHv4IYZ8AAAAAASUVORK5CYII="></td><td>Triangle wave</td></tr>
-    	<tr><th>saw(p)</th><td><img src=" data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAASAQMAAAAJ7e5rAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAABlBMVEUAAAAA1ABAM7nUAAAALUlEQVQI113EwQ0AMAwCsUgMkJFYvZtRca+qfnjmc5p42ZwuXjani5fN6ebHBcpGHaGAyQrrAAAAAElFTkSuQmCC"></td><td>Sawtooth wave</td></tr>
-    	<tr><th>squ(p, 0.25)</th><td><img src=" data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAASAQMAAAAJ7e5rAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAABlBMVEUAAAAA1ABAM7nUAAAAFklEQVQI12NgQAL2B6hK/v///wCy8QAtnBDwdB/2jQAAAABJRU5ErkJggg=="></td><td>The second argument of "squ" and "tri" is the asymmetry ratio. A value between 0 and 1 can be used, with 0.5 being equivalent to leaving this field out entirely. This example represents a 25% pulse wave.</td></tr>
-    	<tr><th>squ(p, 0.125)</th><td><img src=" data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAASAQMAAAAJ7e5rAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAABlBMVEUAAAAA1ABAM7nUAAAAFklEQVQI12NgQAI2VCXt////fwDZeADu8gcJaTvsCAAAAABJRU5ErkJggg=="></td><td></td></tr>
-    	<tr><th>tri(p, 0.25)</th><td><img src=" data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAASAQMAAAAJ7e5rAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAABlBMVEUAAAAA1ABAM7nUAAAAPUlEQVQIHQXBMRGAMBQFsPDagYE7KqESkYC0SkEGE58EALgQO/hAIZtFmGj1EjrpGsHNWfUIhgwOmbQFAD8Aawnq8i4W2wAAAABJRU5ErkJggg=="></td><td></td></tr>
-    	<tr><th>tri(p, 0.125)</th><td><img src=" data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAASAQMAAAAJ7e5rAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAABlBMVEUAAAAA1ABAM7nUAAAAOklEQVQI12NgQALMYJL9AJh8ACZ/gMl/IJL/fwOYPAAmP4DJP0BS/v9/CNkAJh+ASaA++///wWrhAAApZxni4o+uyAAAAABJRU5ErkJggg=="></td><td></td></tr>
-    	<tr><th>sin(p + 0.25)</th><td><img src=" data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAASAQMAAAAJ7e5rAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAABlBMVEUAAAAA1ABAM7nUAAAAPElEQVQIHQXBQQ2AMBQFsP6XJeyIhMngxqQhbZJQAGsBwEWtNCKhCUjRxeMUENMQwxTgfv0rehEQxwcAbB06BnMRarELAAAAAElFTkSuQmCC"></td><td>A sine wave that starts at 90 degrees, equivalent to a cosine.</td></tr>
-    	<tr><th>sin(2*p)</th><td><img src=" data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAASAQMAAAAJ7e5rAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAABlBMVEUAAAAA1ABAM7nUAAAAM0lEQVQI12NgQAJsQMjAwA+EMFK+Qb4BlbQ/YH8AjXxQ/8ABlfzw/8MBBvv///8fQDYeAOd7GhEbt3KfAAAAAElFTkSuQmCC"></td><td>You can multiply "p" to get a different frequency similar to FM synthesis ratios. Two is twice the fundamental frequency.</td></tr>
-    	<tr><th>sin(2*p - 0.25)</th><td><img src=" data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAASAQMAAAAJ7e5rAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAABlBMVEUAAAAA1ABAM7nUAAAANElEQVQI12NgQAYJQMjA8AEImSACjD8Yf0DZUJKJhYkFVQQowIQqwsHIwcjAZAA05gCy6QCghQaz34RIjAAAAABJRU5ErkJggg=="></td><td>Same as before, but with the degree rotation set to -90 degrees.</td></tr>
-    	<tr><th>sin(0.7*p - 0.25)</th><td><img src=" data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAASAQMAAAAJ7e5rAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAABlBMVEUAAAAA1ABAM7nUAAAAOklEQVQIHQXBQRGAMBAEsNzSGfpEAhJwQKVXFr8jAQCcnzCH8ERY5WCrKFYEMRAQE3EhbsSCt7s3APwUmQcUHEPPNQAAAABJRU5ErkJggg=="></td><td></td></tr>
-    	<tr><th>0.5*sin(p) + 0.5*sin(2.0*p)</th><td><img src=" data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAASAQMAAAAJ7e5rAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAABlBMVEUAAAAA1ABAM7nUAAAAOElEQVQI12NgQAJMYJK9AUTyQ8gDIFL+AYK0/yADIn/Ygcg/9SDy//8GBwR54ACIfAAm/x9ANh4Azj4Z8MRm6hoAAAAASUVORK5CYII="></td><td>Additive synthesis can be achieved by adding together multiple functions.</td></tr>
-    	<tr><th>0.5*saw(p) + 0.3*squ(4.0*p)</th><td><img src=" data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAASAQMAAAAJ7e5rAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAABlBMVEUAAAAA1ABAM7nUAAAALElEQVQIHQXBAREAMAgAIfwzlPEXbQAAAAArnFjiyJqXk9Y8ncg8EpqHAgD4r/4EE+9cPX8AAAAASUVORK5CYII="></td><td>Multiplying the entire function by a fractional value like 0.5 or 0.3 lowers its volume.</td></tr>
-    	<tr><th>0.5*squ(2.0*p)</th><td><img src=" data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAASAQMAAAAJ7e5rAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAABlBMVEUAAAAA1ABAM7nUAAAAGklEQVQI12NgIALYH7A/QCT5////AygkEgAAwz8Z5+jtQgQAAAAASUVORK5CYII="></td><td>Standalone example - notice that it decreases the volume towards the centre of the waveforms rather than sticking to the baseline lowest possible amplitude.</td></tr>
-    	<tr><th>saw(1.3*p)</th><td><img src=" data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAASAQMAAAAJ7e5rAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAABlBMVEUAAAAA1ABAM7nUAAAAO0lEQVQIHQXBMRGAMAAEsHAdGJFQKUUKTrBWKY+SJwEAeEBgBK7ADLyBBqPB2WA2WA3a3I7221bbDQA/HNoZ7lVpzSIAAAAASUVORK5CYII="></td><td>You can achieve oscillator hardsync-like sounds by multiplying p with fractional numbers</td></tr>
-    	<tr><th>sin(1.0*p + 0.14*sin(1.0*p))</th><td><img src=" data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAASAQMAAAAJ7e5rAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAABlBMVEUAAAAA1ABAM7nUAAAAOUlEQVQIHQXBQRHAIBAEsLDTAZ5IQEZ/nDSkVVoTADAg8yIKWRuxEBPZHdE+wkvoKjSC60FVcADAD74uA9lybd+wAAAAAElFTkSuQmCC"></td><td>Two operator Frequency Modulation - Similar to Sound Blaster, Adlib or VRC7</td></tr>
-    	<tr><th>sin(2*p+0.09*sin(7*p))</th><td><img src=" data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAASAQMAAAAJ7e5rAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAABlBMVEUAAAAA1ABAM7nUAAAAOklEQVQIHQXBwQ2AMAwEMHMvHkhUTJBNyGgdjc2CDQAeN8GWC1KNHBAbUU1YhE2oFizBKaj2zswHAD8AIQdrQ1qSsQAAAABJRU5ErkJggg=="></td><td>This is also Frequency Modulation - sounds like a bell.</td></tr>
-    	<tr><th>8*(p - 0.5)*(p - 0.5) - 1</th><td><img src=" data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAASAQMAAAAJ7e5rAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAABlBMVEUAAAAA1ABAM7nUAAAAOUlEQVQIHQXBQRGAQAwEsNxOH/fEAZWAhEpDGiiDBAA0JsCFJyCbJSBFJJSALLa4HWK0aKOcnxcAfrjlBLhhXO7rAAAAAElFTkSuQmCC"></td><td>Parabola</td></tr>
-    	<tr><th>(p < 1/2.5 ? sin(2.5*p) : 0)</th><td><img src=" data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAASAQMAAAAJ7e5rAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAABlBMVEUAAAAA1ABAM7nUAAAALElEQVQI12NgQAI8YJIPTMohkfJIpD2EZPz//wCDfSOYbMYgj4PJ/yASCQAATIoZkOYdwVsAAAAASUVORK5CYII="></td><td>This sounds like a MIDI bass</td></tr>
-    	<tr><th>tri(Math.pow(p,4))</th><td><img src=" data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAASAQMAAAAJ7e5rAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAABlBMVEUAAAAA1ABAM7nUAAAANElEQVQIHQXBQRGAMBAAsXSnD55IwAlIQxrOjgQA4BC2QDiFhEt4hAVGLCJvbOLAPTMfAPycSQYguve28gAAAABJRU5ErkJggg=="></td><td></td></tr>
-    	<tr><th>saw(Math.pow(p,4))</th><td><img src=" data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAASAQMAAAAJ7e5rAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAABlBMVEUAAAAA1ABAM7nUAAAAL0lEQVQI12NgQAMOSOQBBMkIJpmRSHYwyQ8m5cGkPZisB5GM/w8w2P////8AstEALoUOt5Tqr1wAAAAASUVORK5CYII="></td><td></td></tr>
-    	<tr><th>(p = (p < 0.5 ? p:1-p)*2)*0 + saw(Math.pow(p,3.7))</th><td><img src=" data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAASAQMAAAAJ7e5rAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAABlBMVEUAAAAA1ABAM7nUAAAAKElEQVQI12NgwAISMMgP6CTjDwTJ/AdBsv8Dkfz/gYT9////DyAbCwAefw3wsLFe4QAAAABJRU5ErkJggg=="></td><td></td></tr>
-    	<tr><th>2.0*Math.abs(sin(0.5*p)) - 1.0</th><td><img src=" data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAASAQMAAAAJ7e5rAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAABlBMVEUAAAAA1ABAM7nUAAAAKElEQVQI12NgwAISMMgP6CTjDwTJ/AdBsv8Dkfz/gYT9////DyAbCwAefw3wsLFe4QAAAABJRU5ErkJggg=="></td><td>Full-wave rectification.</td></tr>
-    	</tbody>
-    	</table>
-        -->
     </div>
   </body>
 </html>
