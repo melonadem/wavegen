@@ -62,34 +62,49 @@ function tri(phase) {
 }
 
 // sprintf("\$%02x", $num)
-function toHexStr(num, prefix_str, signed_check, usePrefix=true) {
-	var prefix;
+function toHexStr(num, prefix_str, signed_check, setPaddingType) {
+    let prefix = prefix_str;
+	var bitDepthVal = document.getElementById('depth-slider').value;
 
-	if (signed_check) {
-		prefix = prefix_str;
-		if (num >= 128) {
-			num = num - 128; //128, 129, 130, -> 0, 1, 2, 3,
-		} else {
-			num = num + 128; //127, 126, 125, -> 255, 254, 253
-		}
-	} else {
-		if (num >= 0) {
-			prefix = prefix_str;
-		} else {
-			prefix = "-" + prefix_str;
-			num = -num;
-		}
-	}
-	if (num < 16 && usePrefix == true) {
-		prefix += "0";
-	}
-	return prefix + num.toString(16).toUpperCase();
+    // Handle sign
+    if (signed_check) {
+        const midpoint = (2 ** bitDepthVal) / 2;
+        if (num >= midpoint) {
+            num = num - midpoint;
+        } else {
+            num = num + midpoint;
+        }
+    } else {
+        if (num < 0) {
+            prefix = "-" + prefix_str;
+            num = -num;
+        }
+    }
+
+    // Convert to hex string first, then measure for padding
+    let hexStr = num.toString(16).toUpperCase();
+
+    switch (setPaddingType) {
+        case 1: { // pad to nearest nybble
+            const targetNybbles = Math.ceil(bitDepthVal / 4);
+            while (hexStr.length < targetNybbles) hexStr = "0" + hexStr;
+            break;
+        }
+        case 2: { // pad to nearest byte
+            const targetBytes = Math.ceil(bitDepthVal / 8) * 2; // *2 because 2 hex chars per byte
+            while (hexStr.length < targetBytes) hexStr = "0" + hexStr;
+            break;
+        }
+        default:
+            break;
+    }
+    return prefix + hexStr;
 }
 
 // ;; The main calculate function, calculate how the waveform should be drawn with floating point numbers
 // ;; Also read the radio button settings and stay within their bounds
 function calcmain(genWav) {
-	var bitDepthVal = parseInt(window.document.F1.M.value);
+	var bitDepthVal = document.getElementById('depth-slider').value;
 	t_length = parseInt(window.document.F1.N.value);
 	y_height = Math.pow(2, bitDepthVal);
 
@@ -110,19 +125,10 @@ function calcmain(genWav) {
 	var t;
 	var datafunction = new Function("p", "return " + window.document.F1.FUNC.value + ";");
 
-	var signed_check;
-	if (window.document.F1.sign[0].checked) {
-		signed_check = false;
-	} else {
-		signed_check = true;
-	}
     // ;; This function converts from floating point to integers; y_height/2 is added to center the waveform to whatever the midmost point of y_height is (if it's 0-15, that'd be 8)
     function normalize(x) {
     	return Math.floor(x*(y_height/2) + y_height/2);
     }
-	function normalize_signed(x) {
-		return Math.floor(x*(y_height/2));
-	}
 	function float_normalise(x) {
 		const quant = Math.floor(x * squ_amp * (y_height / 2));
 		return ((quant / (y_height / 2)));
@@ -144,7 +150,6 @@ function calcmain(genWav) {
 
     // ;; This is where the results are appended to strings and the graph is generated.
 	var result_vals = new Array(t_length);
-    var i;
     var c = window.document.getElementById("distselect").selectedIndex;
 
     // ;; Check which distortion option is selected
@@ -260,16 +265,72 @@ function calcmain(genWav) {
 	}
 
     // ;; Time to see which output format was selected (and then output in said format)
-    var i;
-    var out;
-    for (i = 0; i < window.document.F1.format.length; i++)
-    {
-        if (window.document.F1.format[i].checked)
-        {
-            out = i;
-            break;
-        }
-    }
+	var outputFormat = window.document.getElementById("output").selectedIndex;
+	var prefix = window.document.getElementById("prefix").value;
+
+	switch (outputFormat) {
+		// Integer
+		case 0:
+        	for (i = 0; i < t_length; i++) {
+        		result_vals[i] = idata[i];
+        	}
+		break;
+
+		// Floating-point
+		case 1:
+			for (i = 0; i < t_length; i++) {
+				result_vals[i] = fdata[i];
+			}
+		break;
+
+
+		// Unsigned hex - single values
+		case 2:
+			for (i = 0; i < t_length; i++) {
+			result_vals[i] = toHexStr(idata[i], prefix, false, 0);
+		}
+		break;
+
+		// Unsigned hex - nybble-padded
+		case 3:
+			for (i = 0; i < t_length; i++) {
+			result_vals[i] = toHexStr(idata[i], prefix, false, 1);
+		}
+		break;
+
+		// Unsigned hex - byte-padded
+		case 4:
+			for (i = 0; i < t_length; i++) {
+			result_vals[i] = toHexStr(idata[i], prefix, false, 2);
+		}
+		break;
+
+
+		// Signed hex - single values
+		case 5:
+			for (i = 0; i < t_length; i++) {
+			result_vals[i] = toHexStr(idata[i], prefix, true, 0);
+		}
+		break;
+
+		// Signed hex - nybble-padded
+		case 6:
+			for (i = 0; i < t_length; i++) {
+			result_vals[i] = toHexStr(idata[i], prefix, true, 1);
+		}
+		break;
+
+		// Signed hex - byte-padded
+		case 7:
+			for (i = 0; i < t_length; i++) {
+			result_vals[i] = toHexStr(idata[i], prefix, true, 2);
+		}
+		break;
+
+
+
+	}
+	/*
 	switch (out) {
 		case 0: //decimal
         	for (i = 0; i < t_length; i++) {
@@ -301,35 +362,13 @@ function calcmain(genWav) {
 				result_vals[i] = fdata[i];
 			}
 		break;
-	}
+	}*/
 
     //;;Select the separator to use for the output string
-	var i;
-	var vsep;
-	for (i = 0; i < window.document.F1.separator.length; i++) {
-		if (window.document.F1.separator[i].checked) {
-			vsep = i;
-			break;
-		}
-	}
-	var sep;
-	switch (vsep) {
-		case 0: //none ""
-			sep = "";
-			break;
-		case 1: //space " "
-			sep = " ";
-			break;
-		case 2: //comma and space ", "
-			sep = ", ";
-			break;
-		case 3: //comma ","
-			sep = ",";
-			break;
-		case 4: //new line
-			sep = "\n";
-			break;
-	}
+	var sep = document.getElementById("separator").value;
+	if (sep == "\\n") {
+		sep = "\n";
+	};
 	window.document.F1.TEXT.value = result_vals.join(sep);
 
 	/*******************
@@ -470,6 +509,11 @@ function tooltip() {
   tooltip.innerHTML = "Copy to clipboard";
 }
 
+function updatePrefixVisibility() {
+    const show = document.getElementById("output").selectedIndex > 1;
+    document.getElementById("prefix").style.display = show ? "initial" : "none";
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 //// HELP MENU TIME ////////////////////////////////////////////////////////////
 
@@ -499,9 +543,13 @@ function setDepthText() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+	document.getElementById("separator").defaultValue = " ";
+	updatePrefixVisibility();
+	document.getElementById("output").addEventListener('change', updatePrefixVisibility);
 	const depthslider = document.getElementById('depth-slider');
 	const depthlabel = document.getElementById('depth-label');
 	depthslider.addEventListener('input', () => {
 		setDepthText();
 	});
 });
+

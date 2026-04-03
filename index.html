@@ -30,10 +30,16 @@
             <option data-length="32", data-depth="8", data-sign="true"">Konami SCC/SCC+</option>
         </optgroup>
         <optgroup label="Furnace generic options">
-            <option data-length="32", data-depth="8", data-sign="false">32-step</option>
-            <option data-length="64", data-depth="8", data-sign="false">64-step</option>
-            <option data-length="128", data-depth="8", data-sign="false">128-step</option>
-            <option data-length="256", data-depth="8", data-sign="false">256-step</option>
+            <option data-length="32", data-depth="8", data-sign="false">Fuw - 32-step</option>
+            <option data-length="64", data-depth="8", data-sign="false">Fuw - 64-step</option>
+            <option data-length="128", data-depth="8", data-sign="false">Fuw - 128-step</option>
+            <option data-length="256", data-depth="8", data-sign="false">Fuw - 256-step</option>
+        </optgroup>
+        <optgroup label="WAV Export options">
+            <option data-length="64", data-depth="16", data-sign="false">WAV - 64-step</option>
+            <option data-length="256", data-depth="16", data-sign="false">WAV - 256-step</option>
+            <option data-length="1024", data-depth="16", data-sign="false">WAV - 1024-step</option>
+            <option data-length="4096", data-depth="16", data-sign="false">WAV - 4096-step</option>
         </optgroup>
       </select>
       <br />
@@ -65,25 +71,49 @@
       <input class="checkbox" type="checkbox" name="abscheck"/>absolute
       
       <br />
-      <b>Output format:</b>
+      <label for="output-format"><b>Output format:</b></label>
+      <select id="output">
+        <optgroup label="Decimal outputs">
+            <option value="0" selected>Integer</option>
+            <option value="1">Floating-point</option>
+        </optgroup>
+        <optgroup label="Unsigned Hexadecimal outputs">
+            <option value="2">Unsigned Hex - Single values</option>
+            <option value="3">Unsigned Hex - Padded to nearest nybble</option>
+            <option value="4">Unsigned Hex - Padded to nearest byte</option>
+        </optgroup>
+        <optgroup label="Signed Hexadecimal outputs">
+            <option value="5">Signed Hex - Single values</option>
+            <option value="6">Signed Hex - Padded to nearest nybble</option>
+            <option value="7">Signed Hex - Padded to nearest byte</option>
+        </optgroup>
+      </select>
+      <input type="text" id="prefix" placeholder="Set prefix here (0x, $, etc)">
+
+      <!--
       <input class="radio" type="radio" name="format" value="0" checked="checked" />decimal |
       <input class="radio" type="radio" name="format" value="1" />$XXh |
       <input class="radio" type="radio" name="format" value="2" />0xXXh |
       <input class="radio" type="radio" name="format" value="3" />XXh |
       <input class="radio" type="radio" name="format" value="4" />Xh |
       <input class="radio" type="radio" name="format" value="5" />float
+      -->
       <br />
-      <b>Separator:</b>
+      <label for="separator"><b>Separator:</b></label>
+      <input type="text" id="separator">
+      <!--
       <input class="radio" type="radio" name="separator" value="" />"" |
       <input class="radio" type="radio" name="separator" value=" " checked="checked" />" " |
       <input class="radio" type="radio" name="separator" value=", " />", " |
       <input class="radio" type="radio" name="separator" value="," />"," |
       <input class="radio" type="radio" name="separator" value="nl" />"\n"
+      -->
       <br />
+      <!--
       <b>Signed output (only applies to hex output):</b>
       <input class="radio" type="radio" name="sign" value="0" checked="checked" />unsigned |
       <input class="radio" type="radio" name="sign" value="1" />signed
-      <br />
+      <br />-->
       <input type="button" value="Calculate" onclick="calcmain(0)" class="button" /><input type="button" value="Download WAV" onclick="calcmain(1)" class="button" /><br />
       <p>Output:</p>
       <div class="tooltip" id="tooltipBody">
@@ -217,13 +247,8 @@
         </details><br>
         <details>
             <summary>Separator</summary>
-            <ul>
-                <li>"" - No separation, useful if storing raw hex data.</li>
-                <li>" " - Separated by 1 space.</li>
-                <li>", " - Separated by comma and space.</li>
-                <li>"," - Separated by comma but with no preceding space.</li>
-                <li>"\n" - Separated by new line</li>
-            </ul>
+            The separator field lets you define what each value is separated by. By default, it's prefilled with " ".
+            Using "\n" will set the separator to be a newline.
         </details><br>
         <details>
             <summary>Signed output</summary>
