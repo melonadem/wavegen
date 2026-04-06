@@ -260,10 +260,51 @@ function calcmain(genWav) {
         	}
         break;
     }
-	for (t = 0 ; t < t_length; t++) {
-
-	}
-
+	/* FILTER STUFF
+	* It doesn't work perfectly, but it works fine enough for the purposes of this tool.
+	* It supports combining states (L, B, H), but all three together will produce no result without resonance.
+	* It heavily varies on the waveform length.
+	* There is a layer of degradation in waveform shape when enabling one state but having the signal unaffected by cutoff/resonance.
+	*/
+		const isLP = document.getElementById("filter-lp").checked;
+		const isBP = document.getElementById("filter-bp").checked;
+		const isHP = document.getElementById("filter-hp").checked;
+		if (isLP || isBP || isHP) {
+			const rawCutoff = parseInt(document.getElementById("cutoff").value) / 100;
+			const maxCutoff = Math.floor(t_length / 2);
+			const cutoff = Math.max(1, Math.round(Math.pow(maxCutoff, rawCutoff)));
+			const rawRes = parseInt(document.getElementById("resonance").value) / 100;
+			const Q = Math.max(0.5, Math.min(0.5 * Math.pow(20, rawRes), 10));
+			const sr = Math.round(hzPerSample * t_length);
+			const cutoffHz = Math.min((cutoff / t_length) * sr, sr * 0.499);
+			const w0 = 2 * Math.PI * cutoffHz / sr;
+			const cosW = Math.cos(w0);
+			const sinW = Math.sin(w0);
+			const alpha = sinW / (2 * Q);
+			const a0 = 1 + alpha;
+			const a1 = (-2 * cosW) / a0;
+			const a2 = (1 - alpha)  / a0;
+			function makeCoeffs(b0, b1, b2) {
+				return [b0 / a0, b1 / a0, b2 / a0, a1, a2];
+			}
+			function biquad(data, b0, b1, b2, a1, a2) {
+				let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+				for (let i = 0; i < data.length; i++) {
+					const x0 = data[i];
+					const yf = b0*x0 + b1*x1 + b2*x2 - a1*y1 - a2*y2;
+					data[i] = yf;
+					x2 = x1; x1 = x0;
+					y2 = y1; y1 = yf;
+				}
+			}
+			if (isLP) biquad(fdata, ...makeCoeffs((1-cosW)/2,  1-cosW,      (1-cosW)/2));
+			if (isBP) biquad(fdata, ...makeCoeffs( sinW/2,     0,           -sinW/2   ));
+			if (isHP) biquad(fdata, ...makeCoeffs((1+cosW)/2, -(1+cosW),    (1+cosW)/2));
+			for (t = 0; t < t_length; t++) {
+				fdata[t] = Math.max(-1, Math.min(1, fdata[t]));
+				idata[t] = Math.min(Math.floor(fdata[t] * (y_height / 2) + y_height / 2), y_height - 1);
+			}
+		}
     // ;; Time to see which output format was selected (and then output in said format)
 	var outputFormat = window.document.getElementById("output").selectedIndex;
 	var prefix = window.document.getElementById("prefix").value;
@@ -275,51 +316,42 @@ function calcmain(genWav) {
         		result_vals[i] = idata[i];
         	}
 		break;
-
 		// Floating-point
 		case 1:
 			for (i = 0; i < t_length; i++) {
 				result_vals[i] = fdata[i];
 			}
 		break;
-
-
 		// Unsigned hex - single values
 		case 2:
 			for (i = 0; i < t_length; i++) {
 			result_vals[i] = toHexStr(idata[i], prefix, false, 0);
 		}
 		break;
-
 		// Unsigned hex - nybble-padded
 		case 3:
 			for (i = 0; i < t_length; i++) {
 			result_vals[i] = toHexStr(idata[i], prefix, false, 1);
 		}
 		break;
-
 		// Unsigned hex - byte-padded
 		case 4:
 			for (i = 0; i < t_length; i++) {
 			result_vals[i] = toHexStr(idata[i], prefix, false, 2);
 		}
 		break;
-
-
 		// Signed hex - single values
 		case 5:
 			for (i = 0; i < t_length; i++) {
 			result_vals[i] = toHexStr(idata[i], prefix, true, 0);
 		}
 		break;
-
 		// Signed hex - nybble-padded
 		case 6:
 			for (i = 0; i < t_length; i++) {
 			result_vals[i] = toHexStr(idata[i], prefix, true, 1);
 		}
 		break;
-
 		// Signed hex - byte-padded
 		case 7:
 			for (i = 0; i < t_length; i++) {
@@ -327,7 +359,6 @@ function calcmain(genWav) {
 		}
 		break;
 	}
-
     //;;Select the separator to use for the output string
 	var sep = document.getElementById("separator").value;
 	if (sep == "\\n") {
@@ -441,12 +472,10 @@ function calcmain(genWav) {
 }
 }
 //;; Function to set wavetable parameters based on the preset format selected.
-function nmpreset(n, m, s) {
-	window.document.F1.N.value = n;
-	window.document.F1.M.value = m;
+function presetChange(waveformWidth, bitDepth) {
+	window.document.F1.N.value = waveformWidth;
+	window.document.F1.M.value = bitDepth;
 	setDepthText();
-	window.document.F1.sign[0].checked = 1-s;
-	window.document.F1.sign[1].checked = s;
 }
 function uncheckradio() {
 	var i;
@@ -476,6 +505,15 @@ function tooltip() {
 function updatePrefixVisibility() {
     const show = document.getElementById("output").selectedIndex > 1;
     document.getElementById("prefix").style.display = show ? "initial" : "none";
+}
+
+function updateCutoffMaxValue() {
+	var wavelength = document.getElementById("wave-length");
+	var cutoffFreq = document.getElementById("cutoff");
+	cutoffFreq.max = parseInt(wavelength.value);
+	if (cutoffFreq.value > parseInt(wavelength.value)) {
+		cutoffFreq.value = parseInt(wavelength.value);
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -511,7 +549,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	updatePrefixVisibility();
 	document.getElementById("output").addEventListener('change', updatePrefixVisibility);
 	const depthslider = document.getElementById('depth-slider');
-	const depthlabel = document.getElementById('depth-label');
+	// const depthlabel = document.getElementById('depth-label');
 	depthslider.addEventListener('input', () => {
 		setDepthText();
 	});

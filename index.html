@@ -13,38 +13,37 @@
     </noscript>
     <p>
       <a onclick="showHelp()" id="helptext">Help</a><br />
-      Last updated: 2026.04.03
+      Last updated: 2026.04.06
     </p>
     <div class="gen" id="gen">
     <form name="F1" action="#">
       <label for="system-preset"><b>Preset:</b></label>
-      <select onchange="nmpreset(
+      <select onchange="presetChange(
         parseInt(this.options[this.selectedIndex].dataset.length),
-        parseInt(this.options[this.selectedIndex].dataset.depth),
-        this.options[this.selectedIndex].dataset.sign === 'true'
+        parseInt(this.options[this.selectedIndex].dataset.depth)
       )" name="systems" id="systems-selector">
         <optgroup label="Wavetable chips">
-            <option data-length="64", data-depth="6", data-sign="false">Nintendo FDS / Ricoh RP2C33</option>
-            <option data-length="32", data-depth="4", data-sign="false" selected>Namco WSG, C15, C30, C163 and Nintendo Gameboy</option>
-            <option data-length="32", data-depth="5", data-sign="false">NEC PC-Engine/Turbografx16 / HuC6280</option>
-            <option data-length="32", data-depth="8", data-sign="true">Konami SCC/SCC+</option>
+            <option data-length="64", data-depth="6">Nintendo FDS / Ricoh RP2C33</option>
+            <option data-length="32", data-depth="4" selected>Namco WSG, C15, C30, C163 and Nintendo Gameboy</option>
+            <option data-length="32", data-depth="5">NEC PC-Engine/Turbografx16 / HuC6280</option>
+            <option data-length="32", data-depth="8">Konami SCC/SCC+</option>
         </optgroup>
         <optgroup label="Furnace generic options">
-            <option data-length="32", data-depth="8", data-sign="false">Fuw - 32-step</option>
-            <option data-length="64", data-depth="8", data-sign="false">Fuw - 64-step</option>
-            <option data-length="128", data-depth="8", data-sign="false">Fuw - 128-step</option>
-            <option data-length="256", data-depth="8", data-sign="false">Fuw - 256-step</option>
+            <option data-length="32", data-depth="8">Furnace - 32-step</option>
+            <option data-length="64", data-depth="8">Furnace - 64-step</option>
+            <option data-length="128", data-depth="8">Furnace - 128-step</option>
+            <option data-length="256", data-depth="8">Furnace - 256-step</option>
         </optgroup>
         <optgroup label="WAV Export options">
-            <option data-length="64", data-depth="16", data-sign="false">WAV - 64-step</option>
-            <option data-length="256", data-depth="16", data-sign="false">WAV - 256-step</option>
-            <option data-length="1024", data-depth="16", data-sign="false">WAV - 1024-step</option>
-            <option data-length="4096", data-depth="16", data-sign="false">WAV - 4096-step</option>
+            <option data-length="64", data-depth="16">WAV - 64-step</option>
+            <option data-length="256", data-depth="16">WAV - 256-step</option>
+            <option data-length="1024", data-depth="16">WAV - 1024-step</option>
+            <option data-length="4096", data-depth="16">WAV - 4096-step</option>
         </optgroup>
       </select>
       <br />
       <b>Length:</b>
-      <input class="textfield-input" type="text" value="32" size="4" name="N" onchange="uncheckradio()" /><br />
+      <input class="textfield-input" type="text" value="32" size="4" name="N" id="wave-length"/><br />
       <b>Bit Depth:</b>
       <input class="textfield-input" type="range" id="depth-slider" min="1" max="32" value="4" size="4" name="M"/>
       <span id="depth-label">4-bit</span><br />
@@ -63,8 +62,7 @@
             <option value="2">Fold</option>
             <option value="3">Wrap</option>
         </select>
-      <input class="checkbox" type="checkbox" name="abscheck"/>absolute
-      
+      <input class="checkbox" type="checkbox" name="abscheck"/><span>Absolute mode</span>
       <br />
       <label for="output-format"><b>Output format:</b></label>
       <select id="output">
@@ -88,6 +86,17 @@
       <label for="separator"><b>Separator:</b></label>
       <input type="text" id="separator">
       <br />
+      <label for="filter"><b>Filter:</b></label>
+      <div id="filter-section">
+        <label>Cutoff:</label>
+        <input type="range" id="cutoff" min="1" max="100"><br>
+        <label>Resonance:</label>
+        <input type="range" id="resonance" min="0" max="100" value="0"><br>
+        <label>  Low-pass</label><input class="checkbox" type="checkbox" id="filter-lp"/>
+        <label>  Band-pass</label><input class="checkbox" type="checkbox" id="filter-bp"/>
+        <label>  High-pass</label><input class="checkbox" type="checkbox" id="filter-hp"/>
+      </div>
+      <br>
       <input type="button" value="Calculate" onclick="calcmain(0)" class="button" /><input type="button" value="Download WAV" onclick="calcmain(1)" class="button" /><br />
       <p>Output:</p>
       <div class="tooltip" id="tooltipBody">
