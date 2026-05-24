@@ -4,7 +4,7 @@ var pi = Math.pi;
 var t_length;	// Length axis
 var y_height;	// Amplitude axis (max waveform value +1)
 var squ_amp; // Amplitude of square wave
-const hzPerSample = 261.34375;
+const hzPerSample = 261.34375; // If multiplied with t_length, this'll always produce a sample rate that's tuned to C4. Used for .WAV export.
 
 // Limit range from 0 to 1
 function norm1(x) {
